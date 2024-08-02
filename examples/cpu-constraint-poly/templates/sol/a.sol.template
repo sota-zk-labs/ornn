@@ -45,10 +45,9 @@ contract CpuConstraintPoly {
             }
             {
                 // Prepare expmods for denominators and numerators.
-                {% for expmod in expmods %}
-                    // expmods[] = point^(trace_length / {{expmod.divisor}}).
-                    mstore({{ expmod.memory_address }}, expmod(point, div(/*trace_length*/ mload(0xe0), {{ expmod.divisor }}), PRIME));
-                {% endfor %}
+                {% block instructions %}
+                {{instructions}}
+                {% endblock %}
 
             }
         }
