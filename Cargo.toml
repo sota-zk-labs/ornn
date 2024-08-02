@@ -3,4 +3,16 @@ name = "ornn"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = [
+    "parser",
+    "generator",
+]
+
 [dependencies]
+regex = "1.10.5"
+tera = "1.20.0"
+serde_json = "1.0.121"
+lazy_static = "1.5.0"
+primitive-types = "0.12.2"
+hex = "0.4.3"

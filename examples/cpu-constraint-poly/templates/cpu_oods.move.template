@@ -1,0 +1,20 @@
+{% import "fallback.function" as macros %}
+
+
+module verifier_addr::cpu_oods {
+
+    use std::vector::{borrow, length, for_each_ref, push_back};
+    use lib_addr::math_mod::{mod_mul, mod_add, mod_exp};
+    use verifier_addr::fri_layer::FRI_QUEUE_SLOT_SIZE;
+    use verifier_addr::prime_field_element_0::{k_montgomery_r_inv, k_modulus, generator_val};
+    use verifier_addr::vector::{assign, set_el};
+    use verifier_addr::memory_map_7::{MM_N_UNIQUE_QUERIES, MM_FRI_QUEUE, MM_TRACE_QUERY_RESPONSES,
+        MM_COMPOSITION_QUERY_RESPONSES, MM_OODS_ALPHA, MM_TRACE_GENERATOR, MM_OODS_POINT,
+        MM_OODS_EVAL_POINTS
+    };
+
+
+    {{ macros::fallback_function(greeting="Hello") }}
+
+
+}

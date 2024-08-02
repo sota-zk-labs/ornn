@@ -1,0 +1,56 @@
+/*
+  Copyright 2019-2023 StarkWare Industries Ltd.
+
+  Licensed under the Apache License, Version 2.0 (the "License").
+  You may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://www.starkware.co/open-source-license/
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions
+  and limitations under the License.
+*/
+// ---------- The following code was auto-generated. PLEASE DO NOT EDIT. ----------
+// SPDX-License-Identifier: Apache-2.0.
+pragma solidity ^0.6.12;
+
+contract CpuConstraintPoly {
+    // The Memory map during the execution of this contract is as follows:
+    {% for memory in memory_layout -%}
+    // [{{memory.start}}, {{memory.end}}] - {{memory.description}}
+    {% endfor %}
+    fallback() external {
+        uint256 res;
+        assembly {
+            let PRIME := 0x800000000000011000000000000000000000000000000000000000000000001
+            // Copy input from calldata to memory.
+            calldatacopy(0x0, 0x0, /*Input data size*/ 0x1d40)
+            let point := /*oods_point*/ mload(0x440)
+            function expmod(base, exponent, modulus) -> result {
+              let p := /*expmod_context*/ 0x31c0
+              mstore(p, 0x20)                 // Length of Base.
+              mstore(add(p, 0x20), 0x20)      // Length of Exponent.
+              mstore(add(p, 0x40), 0x20)      // Length of Modulus.
+              mstore(add(p, 0x60), base)      // Base.
+              mstore(add(p, 0x80), exponent)  // Exponent.
+              mstore(add(p, 0xa0), modulus)   // Modulus.
+              // Call modexp precompile.
+              if iszero(staticcall(not(0), 0x05, p, 0xc0, p, 0x20)) {
+                revert(0, 0)
+              }
+              result := mload(p)
+            }
+            {
+                // Prepare expmods for denominators and numerators.
+                {% for expmod in expmods %}
+                    // expmods[] = point^(trace_length / {{expmod.divisor}}).
+                    mstore({{ expmod.memory_address }}, expmod(point, div(/*trace_length*/ mload(0xe0), {{ expmod.divisor }}), PRIME));
+                {% endfor %}
+
+            }
+        }
+    }
+}

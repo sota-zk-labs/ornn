@@ -1,0 +1,71 @@
+{% import "composition-constraint" as macros %}
+
+{% macro fallback_function(greeting) %}
+
+    public fun fallback(ctx: &mut vector<u256>) {
+            let n_queries = (*borrow(ctx, MM_N_UNIQUE_QUERIES()) as u64);
+            let batch_inverse_array = assign(0u256, 2 * n_queries * BATCH_INVERSE_CHUNK);
+
+            oods_prepare_inverses(ctx, &mut batch_inverse_array);
+
+            let k_montgomery_r_inv = k_montgomery_r_inv();
+            let prime = k_modulus();
+            let fri_queue = /*fri_queue*/ MM_FRI_QUEUE();
+            let fri_queue_end = fri_queue + n_queries * FRI_QUEUE_SLOT_SIZE();
+            let trace_query_responses = /*traceQueryQesponses*/ MM_TRACE_QUERY_RESPONSES();
+
+            let composition_query_responses = /*composition_query_responses*/ MM_COMPOSITION_QUERY_RESPONSES();
+
+        // Set denominators_ptr to point to the batchInverseOut array.
+        // The content of batchInverseOut is described in oodsPrepareInverses.
+        let denominators_ptr = 0u64;
+        while (fri_queue < fri_queue_end) {
+            // res accumulates numbers modulo prime. Since 31*prime < 2**256, we may add up to
+            // 31 numbers without fear of overflow, and use mod_add modulo prime only every
+            // 31 iterations, and once more at the very end.
+            let res = 0u256;
+
+            // Trace constraints.
+            let oods_alpha_pow = 1;
+            let oods_alpha = /*oods_alpha*/ *borrow(ctx, MM_OODS_ALPHA());
+
+            let odds_values_offset = 0;
+            for (trace_query_responses_offset in 0..12) {
+                // Read the next element.
+                let column_value = mod_mul(
+                    *borrow(ctx, trace_query_responses + trace_query_responses_offset),
+                    k_montgomery_r_inv,
+                    prime
+                );
+
+                for_each_ref(borrow(&DENOMINATORS_PTR_OFFSET, trace_query_responses_offset), |i| {
+                    res = mod_add(
+                        res,
+                        mod_mul(
+                            mod_mul(
+                                *borrow(&batch_inverse_array, denominators_ptr + *i),
+                                oods_alpha_pow,
+                                prime
+                            ),
+                            add(column_value, sub(prime, /*oods_values[0]*/ *borrow(ctx, 359 + odds_values_offset))),
+                            prime
+                        ),
+                        prime
+                    );
+                    oods_alpha_pow = mod_mul(oods_alpha_pow, oods_alpha, prime);
+                    odds_values_offset = odds_values_offset + 1;
+                });
+            };
+
+            // Advance trace_query_responses by amount read (0x20 * nTraceColumns).
+            trace_query_responses = trace_query_responses + 12;
+
+            // Composition constraints.
+
+            {{ macros::composition_constraint(a=constraint1,b=constraint2,c=constraint3) }}
+
+
+    }
+
+{% endmacro fallback_function %}
+
