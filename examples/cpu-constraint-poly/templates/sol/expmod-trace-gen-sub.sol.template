@@ -1,0 +1,2 @@
+                // expmods[{{index}}] = trace_generator^(trace_length - {{subtrahend}}).
+                mstore({{memory_address}}, expmod(/*trace_generator*/ mload({{trace_generator}}), sub(/*trace_length*/ mload({{trace_length}}), {{subtrahend}}), PRIME));

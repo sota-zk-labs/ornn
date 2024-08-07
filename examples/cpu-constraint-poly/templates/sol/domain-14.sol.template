@@ -1,0 +1,21 @@
+                // domains[14] = (point^(trace_length / 128) - trace_generator^(19 * trace_length / 32)) * (point^(trace_length / 128) - trace_generator^(5 * trace_length / 8)) * (point^(trace_length / 128) - trace_generator^(21 * trace_length / 32)) * domain12.
+              mstore(0x2b80,
+                     mulmod(
+                       mulmod(
+                         mulmod(
+                           addmod(
+                             /*point^(trace_length / 128)*/ mload(0x2400),
+                             sub(PRIME, /*trace_generator^(19 * trace_length / 32)*/ mload(0x26e0)),
+                             PRIME),
+                           addmod(
+                             /*point^(trace_length / 128)*/ mload(0x2400),
+                             sub(PRIME, /*trace_generator^(5 * trace_length / 8)*/ mload(0x2700)),
+                             PRIME),
+                           PRIME),
+                         addmod(
+                           /*point^(trace_length / 128)*/ mload(0x2400),
+                           sub(PRIME, /*trace_generator^(21 * trace_length / 32)*/ mload(0x2720)),
+                           PRIME),
+                         PRIME),
+                       /*domains[12]*/ mload(0x2b40),
+                       PRIME))

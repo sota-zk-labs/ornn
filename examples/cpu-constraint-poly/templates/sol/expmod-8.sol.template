@@ -1,2 +1,2 @@
-                // expmod_special[] = point^trace_length.
+                // expmods[{{index}}] = point^trace_length.
                 mstore({{memory_address}}, expmod(point, /*trace_length*/ mload({{trace_length}}), PRIME));

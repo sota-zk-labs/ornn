@@ -5,14 +5,29 @@ edition = "2021"
 
 [workspace]
 members = [
-    "parser",
-    "generator",
+    "crate/parser",
+    "crate/generator",
+    "crate/ast",
 ]
 
-[dependencies]
+[workspace.dependencies]
 regex = "1.10.5"
 tera = "1.20.0"
 serde_json = "1.0.121"
 lazy_static = "1.5.0"
 primitive-types = { version = "0.12.2", features = ["serde"] }
 hex = "0.4.3"
+
+parser = { path = "crate/parser" }
+generator = { path = "crate/generator" }
+ast = { path = "crate/ast" }
+
+[dependencies]
+regex = { workspace = true }
+tera = { workspace = true }
+serde_json = { workspace = true }
+lazy_static = { workspace = true }
+primitive-types = { workspace = true }
+hex = { workspace = true }
+
+

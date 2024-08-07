@@ -1,2 +1,2 @@
-                // expmods[] = point^(trace_length / {{divisor}}).
+                // expmods[{{index}}] = point^(trace_length / {{divisor}}).
                 mstore({{memory_address}}, expmod(point, div(/*trace_length*/ mload({{trace_length}}), {{divisor}}), PRIME));

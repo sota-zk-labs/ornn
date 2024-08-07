@@ -1,0 +1,7 @@
+{%- if subtrahend == "1" %}
+                // domains[{{index}}] = {{minuend_expression}} - {{subtrahend_expression}}.
+                mstore({{memory_address}}, addmod(/*{{minuend_expression}}*/ mload({{minuend}}), sub(PRIME, {{subtrahend}}), PRIME))
+{%- else %}
+                // domains[{{index}}] = {{minuend_expression}} - {{subtrahend_expression}}.
+                mstore({{memory_address}}, addmod(/*{{minuend_expression}}*/ mload({{minuend}}), sub(PRIME, /*{{subtrahend_expression}}*/ mload({{subtrahend}})), PRIME))
+{%- endif -%}

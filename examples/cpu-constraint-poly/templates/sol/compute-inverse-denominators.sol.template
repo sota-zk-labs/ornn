@@ -1,0 +1,52 @@
+              // Compute the inverses of the denominators into denominatorInvs using batch inverse.
+
+              // Start by computing the cumulative product.
+              // Let (d_0, d_1, d_2, ..., d_{n-1}) be the values in denominators. After this loop
+              // denominatorInvs will be (1, d_0, d_0 * d_1, ...) and prod will contain the value of
+              // d_0 * ... * d_{n-1}.
+              // Compute the offset between the partialProducts array and the input values array.
+              let productsToValuesOffset := 0x240
+              let prod := 1
+              let partialProductEndPtr := 0x2f80
+              for { let partialProductPtr := 0x2d40 }
+                  lt(partialProductPtr, partialProductEndPtr)
+                  { partialProductPtr := add(partialProductPtr, 0x20) } {
+                  mstore(partialProductPtr, prod)
+                  // prod *= d_{i}.
+                  prod := mulmod(prod,
+                                 mload(add(partialProductPtr, productsToValuesOffset)),
+                                 PRIME)
+              }
+
+              let firstPartialProductPtr := 0x2d40
+              // Compute the inverse of the product.
+              let prodInv := expmod(prod, sub(PRIME, 2), PRIME)
+
+              if eq(prodInv, 0) {
+                  // Solidity generates reverts with reason that look as follows:
+                  // 1. 4 bytes with the constant 0x08c379a0 (== Keccak256(b'Error(string)')[:4]).
+                  // 2. 32 bytes offset bytes (always 0x20 as far as i can tell).
+                  // 3. 32 bytes with the length of the revert reason.
+                  // 4. Revert reason string.
+
+                  mstore(0, 0x08c379a000000000000000000000000000000000000000000000000000000000)
+                  mstore(0x4, 0x20)
+                  mstore(0x24, 0x1e)
+                  mstore(0x44, "Batch inverse product is zero.")
+                  revert(0, 0x62)
+              }
+
+              // Compute the inverses.
+              // Loop over denominator_invs in reverse order.
+              // currentPartialProductPtr is initialized to one past the end.
+              let currentPartialProductPtr := 0x2f80
+              for { } gt(currentPartialProductPtr, firstPartialProductPtr) { } {
+                  currentPartialProductPtr := sub(currentPartialProductPtr, 0x20)
+                  // Store 1/d_{i} = (d_0 * ... * d_{i-1}) * 1/(d_0 * ... * d_{i}).
+                  mstore(currentPartialProductPtr,
+                         mulmod(mload(currentPartialProductPtr), prodInv, PRIME))
+                  // Update prodInv to be 1/(d_0 * ... * d_{i-1}) by multiplying by d_i.
+                  prodInv := mulmod(prodInv,
+                                     mload(add(currentPartialProductPtr, productsToValuesOffset)),
+                                     PRIME)
+              }
