@@ -69,7 +69,7 @@ impl Generator<ASTNode> for ASTGenerator {
 // #[cfg(test)]
 // mod test {
 //     use parser::{ASTParser, Parser};
-//     use crate::{ASTGenerator, Generator};
+//     use crates::{ASTGenerator, Generator};
 //
 //     #[test]
 //     fn test() {

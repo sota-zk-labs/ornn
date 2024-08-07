@@ -5,9 +5,9 @@ edition = "2021"
 
 [workspace]
 members = [
-    "crate/parser",
-    "crate/generator",
-    "crate/ast",
+    "crates/parser",
+    "crates/generator",
+    "crates/ast",
 ]
 
 [workspace.dependencies]
@@ -18,9 +18,9 @@ lazy_static = "1.5.0"
 primitive-types = { version = "0.12.2", features = ["serde"] }
 hex = "0.4.3"
 
-parser = { path = "crate/parser" }
-generator = { path = "crate/generator" }
-ast = { path = "crate/ast" }
+parser = { path = "crates/parser" }
+generator = { path = "crates/generator" }
+ast = { path = "crates/ast" }
 
 [dependencies]
 regex = { workspace = true }
