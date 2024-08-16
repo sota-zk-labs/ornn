@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 ast = {workspace = true}
+registry = {workspace = true}
+parser = {workspace = true}

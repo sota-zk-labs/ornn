@@ -2279,19 +2279,19 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for memory/multi_column_perm/perm/init0: (memory/multi_column_perm/perm/interaction_elm - (column4_row0 + memory/multi_column_perm/hash_interaction_elm0 * column4_row1)) * column11_inter1_row0 + column3_row0 + memory/multi_column_perm/hash_interaction_elm0 * column3_row1 - memory/multi_column_perm/perm/interaction_elm.
+              // Constraint expression for memory/multi_column_perm/perm/init0: (memory__multi_column_perm__perm__interaction_elm - (column4_row0 + memory__multi_column_perm__hash_interaction_elm0 * column4_row1)) * column11_inter1_row0 + column3_row0 + memory__multi_column_perm__hash_interaction_elm0 * column3_row1 - memory__multi_column_perm__perm__interaction_elm.
               let val := addmod(
                 addmod(
                   addmod(
                     mulmod(
                       addmod(
-                        /*memory/multi_column_perm/perm/interaction_elm*/ mload(0x1c0),
+                        /*memory__multi_column_perm__perm__interaction_elm*/ mload(0x1c0),
                         sub(
                           PRIME,
                           addmod(
                             /*column4_row0*/ mload(0x10a0),
                             mulmod(
-                              /*memory/multi_column_perm/hash_interaction_elm0*/ mload(0x1e0),
+                              /*memory__multi_column_perm__hash_interaction_elm0*/ mload(0x1e0),
                               /*column4_row1*/ mload(0x10c0),
                               PRIME),
                             PRIME)),
@@ -2301,11 +2301,11 @@ contract CpuConstraintPoly {
                     /*column3_row0*/ mload(0xb60),
                     PRIME),
                   mulmod(
-                    /*memory/multi_column_perm/hash_interaction_elm0*/ mload(0x1e0),
+                    /*memory__multi_column_perm__hash_interaction_elm0*/ mload(0x1e0),
                     /*column3_row1*/ mload(0xb80),
                     PRIME),
                   PRIME),
-                sub(PRIME, /*memory/multi_column_perm/perm/interaction_elm*/ mload(0x1c0)),
+                sub(PRIME, /*memory__multi_column_perm__perm__interaction_elm*/ mload(0x1c0)),
                 PRIME)
 
               // Numerator: 1.
@@ -2320,17 +2320,17 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for memory/multi_column_perm/perm/step0: (memory/multi_column_perm/perm/interaction_elm - (column4_row2 + memory/multi_column_perm/hash_interaction_elm0 * column4_row3)) * column11_inter1_row2 - (memory/multi_column_perm/perm/interaction_elm - (column3_row2 + memory/multi_column_perm/hash_interaction_elm0 * column3_row3)) * column11_inter1_row0.
+              // Constraint expression for memory/multi_column_perm/perm/step0: (memory__multi_column_perm__perm__interaction_elm - (column4_row2 + memory__multi_column_perm__hash_interaction_elm0 * column4_row3)) * column11_inter1_row2 - (memory__multi_column_perm__perm__interaction_elm - (column3_row2 + memory__multi_column_perm__hash_interaction_elm0 * column3_row3)) * column11_inter1_row0.
               let val := addmod(
                 mulmod(
                   addmod(
-                    /*memory/multi_column_perm/perm/interaction_elm*/ mload(0x1c0),
+                    /*memory__multi_column_perm__perm__interaction_elm*/ mload(0x1c0),
                     sub(
                       PRIME,
                       addmod(
                         /*column4_row2*/ mload(0x10e0),
                         mulmod(
-                          /*memory/multi_column_perm/hash_interaction_elm0*/ mload(0x1e0),
+                          /*memory__multi_column_perm__hash_interaction_elm0*/ mload(0x1e0),
                           /*column4_row3*/ mload(0x1100),
                           PRIME),
                         PRIME)),
@@ -2341,13 +2341,13 @@ contract CpuConstraintPoly {
                   PRIME,
                   mulmod(
                     addmod(
-                      /*memory/multi_column_perm/perm/interaction_elm*/ mload(0x1c0),
+                      /*memory__multi_column_perm__perm__interaction_elm*/ mload(0x1c0),
                       sub(
                         PRIME,
                         addmod(
                           /*column3_row2*/ mload(0xba0),
                           mulmod(
-                            /*memory/multi_column_perm/hash_interaction_elm0*/ mload(0x1e0),
+                            /*memory__multi_column_perm__hash_interaction_elm0*/ mload(0x1e0),
                             /*column3_row3*/ mload(0xbc0),
                             PRIME),
                           PRIME)),
@@ -2473,19 +2473,19 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for range_check16/perm/init0: (range_check16/perm/interaction_elm - column6_row2) * column11_inter1_row1 + column6_row0 - range_check16/perm/interaction_elm.
+              // Constraint expression for range_check16/perm/init0: (range_check16__perm__interaction_elm - column6_row2) * column11_inter1_row1 + column6_row0 - range_check16__perm__interaction_elm.
               let val := addmod(
                 addmod(
                   mulmod(
                     addmod(
-                      /*range_check16/perm/interaction_elm*/ mload(0x220),
+                      /*range_check16__perm__interaction_elm*/ mload(0x220),
                       sub(PRIME, /*column6_row2*/ mload(0x12a0)),
                       PRIME),
                     /*column11_inter1_row1*/ mload(0x1ce0),
                     PRIME),
                   /*column6_row0*/ mload(0x1260),
                   PRIME),
-                sub(PRIME, /*range_check16/perm/interaction_elm*/ mload(0x220)),
+                sub(PRIME, /*range_check16__perm__interaction_elm*/ mload(0x220)),
                 PRIME)
 
               // Numerator: 1.
@@ -2500,11 +2500,11 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for range_check16/perm/step0: (range_check16/perm/interaction_elm - column6_row6) * column11_inter1_row5 - (range_check16/perm/interaction_elm - column6_row4) * column11_inter1_row1.
+              // Constraint expression for range_check16/perm/step0: (range_check16__perm__interaction_elm - column6_row6) * column11_inter1_row5 - (range_check16__perm__interaction_elm - column6_row4) * column11_inter1_row1.
               let val := addmod(
                 mulmod(
                   addmod(
-                    /*range_check16/perm/interaction_elm*/ mload(0x220),
+                    /*range_check16__perm__interaction_elm*/ mload(0x220),
                     sub(PRIME, /*column6_row6*/ mload(0x1320)),
                     PRIME),
                   /*column11_inter1_row5*/ mload(0x1d20),
@@ -2513,7 +2513,7 @@ contract CpuConstraintPoly {
                   PRIME,
                   mulmod(
                     addmod(
-                      /*range_check16/perm/interaction_elm*/ mload(0x220),
+                      /*range_check16__perm__interaction_elm*/ mload(0x220),
                       sub(PRIME, /*column6_row4*/ mload(0x12e0)),
                       PRIME),
                     /*column11_inter1_row1*/ mload(0x1ce0),
@@ -2603,19 +2603,19 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for diluted_check/permutation/init0: (diluted_check/permutation/interaction_elm - column2_row0) * column10_inter1_row0 + column1_row0 - diluted_check/permutation/interaction_elm.
+              // Constraint expression for diluted_check/permutation/init0: (diluted_check__permutation__interaction_elm - column2_row0) * column10_inter1_row0 + column1_row0 - diluted_check__permutation__interaction_elm.
               let val := addmod(
                 addmod(
                   mulmod(
                     addmod(
-                      /*diluted_check/permutation/interaction_elm*/ mload(0x2a0),
+                      /*diluted_check__permutation__interaction_elm*/ mload(0x2a0),
                       sub(PRIME, /*column2_row0*/ mload(0xb20)),
                       PRIME),
                     /*column10_inter1_row0*/ mload(0x1c80),
                     PRIME),
                   /*column1_row0*/ mload(0x740),
                   PRIME),
-                sub(PRIME, /*diluted_check/permutation/interaction_elm*/ mload(0x2a0)),
+                sub(PRIME, /*diluted_check__permutation__interaction_elm*/ mload(0x2a0)),
                 PRIME)
 
               // Numerator: 1.
@@ -2630,11 +2630,11 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for diluted_check/permutation/step0: (diluted_check/permutation/interaction_elm - column2_row1) * column10_inter1_row1 - (diluted_check/permutation/interaction_elm - column1_row1) * column10_inter1_row0.
+              // Constraint expression for diluted_check/permutation/step0: (diluted_check__permutation__interaction_elm - column2_row1) * column10_inter1_row1 - (diluted_check__permutation__interaction_elm - column1_row1) * column10_inter1_row0.
               let val := addmod(
                 mulmod(
                   addmod(
-                    /*diluted_check/permutation/interaction_elm*/ mload(0x2a0),
+                    /*diluted_check__permutation__interaction_elm*/ mload(0x2a0),
                     sub(PRIME, /*column2_row1*/ mload(0xb40)),
                     PRIME),
                   /*column10_inter1_row1*/ mload(0x1ca0),
@@ -2643,7 +2643,7 @@ contract CpuConstraintPoly {
                   PRIME,
                   mulmod(
                     addmod(
-                      /*diluted_check/permutation/interaction_elm*/ mload(0x2a0),
+                      /*diluted_check__permutation__interaction_elm*/ mload(0x2a0),
                       sub(PRIME, /*column1_row1*/ mload(0x760)),
                       PRIME),
                     /*column10_inter1_row0*/ mload(0x1c80),
@@ -2714,7 +2714,7 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for diluted_check/step: column9_inter1_row1 - (column9_inter1_row0 * (1 + diluted_check/interaction_z * (column2_row1 - column2_row0)) + diluted_check/interaction_alpha * (column2_row1 - column2_row0) * (column2_row1 - column2_row0)).
+              // Constraint expression for diluted_check/step: column9_inter1_row1 - (column9_inter1_row0 * (1 + diluted_check__interaction_z * (column2_row1 - column2_row0)) + diluted_check__interaction_alpha * (column2_row1 - column2_row0) * (column2_row1 - column2_row0)).
               let val := addmod(
                 /*column9_inter1_row1*/ mload(0x1c60),
                 sub(
@@ -2725,14 +2725,14 @@ contract CpuConstraintPoly {
                       addmod(
                         1,
                         mulmod(
-                          /*diluted_check/interaction_z*/ mload(0x300),
+                          /*diluted_check__interaction_z*/ mload(0x300),
                           addmod(/*column2_row1*/ mload(0xb40), sub(PRIME, /*column2_row0*/ mload(0xb20)), PRIME),
                           PRIME),
                         PRIME),
                       PRIME),
                     mulmod(
                       mulmod(
-                        /*diluted_check/interaction_alpha*/ mload(0x320),
+                        /*diluted_check__interaction_alpha*/ mload(0x320),
                         addmod(/*column2_row1*/ mload(0xb40), sub(PRIME, /*column2_row0*/ mload(0xb20)), PRIME),
                         PRIME),
                       addmod(/*column2_row1*/ mload(0xb40), sub(PRIME, /*column2_row0*/ mload(0xb20)), PRIME),

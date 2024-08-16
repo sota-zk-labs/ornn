@@ -18,10 +18,8 @@
 pragma solidity ^0.6.12;
 
 contract CpuConstraintPoly {
-    // The Memory map during the execution of this contract is as follows:
-    {% for memory in memory_layout -%}
-    // [{{memory.start}}, {{memory.end}}] - {{memory.description}}
-    {% endfor %}
+    {% include "sol/memory-map.sol.template" %}
+
     fallback() external {
         uint256 res;
         assembly {
@@ -46,7 +44,6 @@ contract CpuConstraintPoly {
             {
                 // Prepare expmods for denominators and numerators.
                 {%- block instructions %}
-                // TODO: improve the calculation of the expmod.
                 {{instructions}}
                 {%- endblock instructions %}
             }
@@ -57,6 +54,13 @@ contract CpuConstraintPoly {
             }
             {
                 {% include "sol/compute-inverse-denominators.sol.template" %}
+            }
+
+            {
+                let composition_alpha_pow := 1
+                let composition_alpha := /*composition_alpha*/ mload(0x520)
+
+                {{ compositions }}
             }
         }
     }

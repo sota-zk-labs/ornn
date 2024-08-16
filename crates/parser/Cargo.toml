@@ -5,5 +5,4 @@ edition = "2021"
 
 [dependencies]
 regex = { workspace = true }
-generator = { workspace = true }
 ast = { workspace = true }

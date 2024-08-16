@@ -35,6 +35,9 @@ checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
 [[package]]
 name = "ast"
 version = "0.1.0"
+dependencies = [
+ "primitive-types",
+]
 
 [[package]]
 name = "autocfg"
@@ -244,6 +247,8 @@ name = "generator"
 version = "0.1.0"
 dependencies = [
  "ast",
+ "parser",
+ "registry",
 ]
 
 [[package]]
@@ -454,10 +459,14 @@ checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 name = "ornn"
 version = "0.1.0"
 dependencies = [
+ "ast",
+ "generator",
  "hex",
  "lazy_static",
+ "parser",
  "primitive-types",
  "regex",
+ "registry",
  "serde_json",
  "tera",
 ]
@@ -502,7 +511,6 @@ name = "parser"
 version = "0.1.0"
 dependencies = [
  "ast",
- "generator",
  "regex",
 ]
 
@@ -707,6 +715,10 @@ name = "regex-syntax"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
+
+[[package]]
+name = "registry"
+version = "0.1.0"
 
 [[package]]
 name = "rustc-hex"
