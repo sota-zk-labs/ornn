@@ -62,13 +62,13 @@ impl Template {
                 s
             }
             Err(e) => {
-                println!("### error ###: {}", e);
+                println!("### warn ###: {}", e);
                 let mut cause = e.source();
                 while let Some(e) = cause {
                     println!("Reason: {}", e);
                     cause = e.source();
                 }
-                format!("### error ### render template error {}", e)
+                format!("### warn ### render template error {}", e)
             }
         }
     }
@@ -160,14 +160,13 @@ impl Comment {
                 };
                 let slot = match data.registry.load(&name) {
                     None => {
-                        println!("### error ### No memory slot found for: {}", name);
+                        println!("### warn ### No memory slot found for: {}", name);
                         return;
                     }
                     Some(address) => address
-                };
+                }.to_string();
 
-                // &data.registry.store(e.left.clone(), slot.to_string());
-
+                data.registry.store(ast.to_string(), slot.clone());
 
                 let a = match count {
                     0 => format!("{{\nlet val := {}\nmstore({}, val)\n}}", code, slot),
@@ -188,8 +187,6 @@ impl Comment {
                 };
 
                 for constraint in constraints {
-                    println!("### debug ### constraints: {} {} {}", constraint, name, index);
-                    println!("{}", format!("{}[{}]", name, index));
                     registry.store(constraint.to_string(), format!("{}[{}]", name, index));
                 }
             }
@@ -203,7 +200,7 @@ impl Comment {
 
                 let numerator = match data.nume_registry.load(name) {
                     None => {
-                        println!("### error ### No numerator slot found for: {}", name);
+                        println!("### warn ### No numerator found for: {}", name);
                         "1"
                     }
                     Some(str) => str
@@ -215,18 +212,18 @@ impl Comment {
                     _ =>{
                         let slot = match data.registry.load(&numerator.to_string()) {
                             None => {
-                                println!("### error ### No memory slot found for: {} de", numerator);
+                                println!("### warn ### No memory slot found for: {}", numerator);
                                 return;
                             }
                             Some(address) => address
                         };
-                        format!("val := mulmod(val, mload({}), PRIME)\n", slot)
+                        format!("// Numerator\n// val *= numerator\nval := mulmod(val, mload({}), PRIME)\n", slot)
                     }
                 };
 
                 let denominator = match data.denom_registry.load(name) {
                     None => {
-                        println!("### error ### No denominator found for: {}", name);
+                        println!("### warn ### No denominator found for: {}", name);
                         "1"
                     }
                     Some(str) => str
@@ -238,12 +235,12 @@ impl Comment {
                     _ => {
                         let slot = match data.registry.load(&denominator.to_string()) {
                             None => {
-                                println!("### error ### No memory slot found for: {} de", denominator);
+                                println!("### warn ### No memory slot found for: {}", denominator);
                                 return;
                             }
                             Some(address) => address
                         };
-                        format!("val := mulmod(val, mload({}), PRIME)\n", slot)
+                        format!("// Denominator\n// val *= denominator inverse\n val := mulmod(val, mload({}), PRIME)\n", slot)
                     }
                 };
 
@@ -256,7 +253,6 @@ impl Comment {
                 // code
 
                 let a = format!("\n//Constraint expression for {}: {}\n{}\n}}\n", name, expr, a);
-                println!("### debug ###: {}", a);
 
                 data.compositions.push_str(a.as_str());
             }
@@ -350,7 +346,7 @@ mod test {
     use primitive_types::U256;
     use regex::Regex;
     use tera::Context;
-    use registry::memory_registry::MemoryRegistry;
+    use registry::hashmap_registry::HashMapRegistry;
     use registry::Registry;
     use crate::{ContractData, read, TEMPLATES, extract_comment, extract_oods_values, Node, Generate, Template, Instruction, Comment, Memory, extract_denom_invs};
 
@@ -364,13 +360,13 @@ mod test {
             denominators: String::new(),
             denominator_invs: String::new(),
             compositions: String::new(),
-            registry: Box::new(MemoryRegistry {
+            registry: Box::new(HashMapRegistry {
                 memory: HashMap::new()
             }),
-            denom_registry: Box::new(MemoryRegistry {
+            denom_registry: Box::new(HashMapRegistry {
                 memory: HashMap::new()
             }),
-            nume_registry: Box::new(MemoryRegistry {
+            nume_registry: Box::new(HashMapRegistry {
                 memory: HashMap::new()
             }),
             ctx: Context::new(),
@@ -384,7 +380,6 @@ mod test {
         // find the oods value's memory addresses
         let oods = extract_oods_values(&code);
         for (key, value) in oods {
-            println!("### debug ### Memory Capture {}: {}", key, value);
             data.registry.store(key, value);
         }
 

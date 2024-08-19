@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use crate::Registry;
 
-pub struct MemoryRegistry {
+pub struct HashMapRegistry {
     pub memory: HashMap<String, String>,
 }
 
-impl Registry for MemoryRegistry {
+impl Registry for HashMapRegistry {
     fn store(&mut self, key: String, value: String) {
         self.memory.insert(key, value);
     }

@@ -97,7 +97,7 @@ impl ASTParser {
                     continue;
                 }
                 _ => {
-                    println!("### error ### Unexpected character: {} in expression: {}", ch, expression);
+                    println!("### warn ### Unexpected character: {} in expression: {}", ch, expression);
 
                     return vec![Token::None];
                     // panic!("Unexpected character")
@@ -154,28 +154,46 @@ impl ASTParser {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
     use super::*;
+
+    #[test]
+    fn single_var() {
+        let expression = "domains[0]";
+        let ast = ASTParser::parse(expression);
+
+        println!("ast: {}", ast);
+    }
+
+    #[test]
+    fn simple_expression() {
+        let expression = "column0_row0 - (column0_row1 + column0_row1)";
+        let ast = ASTParser::parse(expression);
+
+        println!("ast: {}", ast);
+    }
+
+    #[test]
+    fn simple_registry() {
+        let expression = "point^(trace_length / 128) - trace_generator^(3 * trace_length / 4)";
+        let ast = ASTParser::parse(expression);
+
+        println!("ast: {}", ast);
+    }
+
+    #[test]
+    fn large_expression() {
+        let expression = "column1_row0 + column1_row2 * 2 + column1_row4 * 4 + column1_row6 * 8 + column1_row8 * 18446744073709551616 + column1_row10 * 36893488147419103232 + column1_row12 * 73786976294838206464 + column1_row14 * 147573952589676412928";
+        let ast = ASTParser::parse(expression);
+
+        println!("ast: {}", ast);
+    }
 
     #[test]
     fn parse_failed() {
         let expression = "d_{i}";
         let ast = ASTParser::parse(expression);
 
-        // let mut registry: Box<dyn Registry> = Box::new(MemoryRegistry {
-        //     memory: HashMap::new()
-        // });
-        //
-        // registry.store("column1_row0".to_string(), "0x00".to_string());
-        // registry.store("column1_row2".to_string(), "0x00".to_string());
-        // registry.store("column1_row4".to_string(), "0x00".to_string());
-        // registry.store("column1_row6".to_string(), "0x00".to_string());
-        // registry.store("column1_row8".to_string(), "0x00".to_string());
-        // registry.store("column1_row10".to_string(), "0x00".to_string());
-        // registry.store("column1_row12".to_string(), "0x00".to_string());
-        // registry.store("column1_row14".to_string(), "0x00".to_string());
-        //
-        // let solidity_code = ASTGenerator::generate(&ast, &registry);
         println!("ast: {}", ast);
-        // println!("{}", solidity_code);
     }
 }

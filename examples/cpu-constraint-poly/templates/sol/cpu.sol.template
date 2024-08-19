@@ -61,6 +61,9 @@ contract CpuConstraintPoly {
                 let composition_alpha := /*composition_alpha*/ mload(0x520)
 
                 {{ compositions }}
+
+                mstore(0, res)
+                return(0, 0x20)
             }
         }
     }

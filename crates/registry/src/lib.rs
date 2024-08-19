@@ -1,4 +1,4 @@
-pub mod memory_registry;
+pub mod hashmap_registry;
 
 pub trait Registry {
     fn store(&mut self, key: String, value: String);
