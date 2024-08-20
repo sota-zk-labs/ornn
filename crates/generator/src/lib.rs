@@ -2,16 +2,18 @@ pub mod sol_generator;
 pub mod template_generator;
 pub mod move_generator;
 
-use ast::{ASTNode};
 use registry::Registry;
+use structure::ast::ASTNode;
 
 pub trait GeneratorInput {}
+pub trait GeneratorOutput {}
 
 impl GeneratorInput for ASTNode {}
 
-pub trait Generator<T>
+pub trait Generator<I,O>
 where
-    T: GeneratorInput,
+    I: GeneratorInput,
+    O: GeneratorOutput,
 {
-    fn generate(ast: &T, registry: &Box<dyn Registry>) -> (String, usize);
+    fn generate(&mut self, ast: &I) -> O;
 }

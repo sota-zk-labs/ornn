@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use ast::ASTNode;
+use structure::ast::ASTNode;
 use crate::{Parser, ParserOutput};
 
 impl ParserOutput for ASTNode {}
@@ -162,7 +162,7 @@ mod tests {
         let expression = "domains[0]";
         let ast = ASTParser::parse(expression);
 
-        println!("ast: {}", ast);
+        println!("structure: {}", ast);
     }
 
     #[test]
@@ -170,7 +170,7 @@ mod tests {
         let expression = "column0_row0 - (column0_row1 + column0_row1)";
         let ast = ASTParser::parse(expression);
 
-        println!("ast: {}", ast);
+        println!("structure: {}", ast);
     }
 
     #[test]
@@ -178,7 +178,7 @@ mod tests {
         let expression = "point^(trace_length / 128) - trace_generator^(3 * trace_length / 4)";
         let ast = ASTParser::parse(expression);
 
-        println!("ast: {}", ast);
+        println!("structure: {}", ast);
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod tests {
         let expression = "column1_row0 + column1_row2 * 2 + column1_row4 * 4 + column1_row6 * 8 + column1_row8 * 18446744073709551616 + column1_row10 * 36893488147419103232 + column1_row12 * 73786976294838206464 + column1_row14 * 147573952589676412928";
         let ast = ASTParser::parse(expression);
 
-        println!("ast: {}", ast);
+        println!("structure: {}", ast);
     }
 
     #[test]
@@ -194,6 +194,6 @@ mod tests {
         let expression = "d_{i}";
         let ast = ASTParser::parse(expression);
 
-        println!("ast: {}", ast);
+        println!("structure: {}", ast);
     }
 }

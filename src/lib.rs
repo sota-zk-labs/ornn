@@ -1,20 +1,15 @@
+use generator::Generator;
+use lazy_static::lazy_static;
+use parser::Parser;
+use regex::Regex;
+use registry::Registry;
+use serde_json::{to_value, Value};
 use std::collections::HashMap;
 use std::error::Error;
-use std::fs;
 use std::fs::File;
 use std::io::{Read, Write};
-use lazy_static::lazy_static;
-use primitive_types::U256;
-use regex::Regex;
-use serde_json::{to_value, Value};
-use tera::{Context, Tera, try_get_value};
-use ast::ASTNode;
-use generator::sol_generator::SolGenerator;
-use generator::Generator;
-use parser::ast_parser::ASTParser;
-use parser::Parser;
-use registry::Registry;
-
+use structure::ast::ASTNode;
+use tera::{try_get_value, Context, Tera};
 
 pub trait Generate {
     fn generate(&self) -> String;
@@ -24,29 +19,29 @@ pub struct Template {
     name: String,
     ctx: Box<Context>,
 }
-pub enum Node {
-    Block(Vec<Box<Node>>),
-    String(String),
-    Template(Template),
-    Expression(Instruction),
-}
-
-impl Generate for Node {
-    fn generate(&self) -> String {
-        match self {
-            Node::String(s) => s.to_string(),
-            Node::Template(_) => "template".to_string(),
-            Node::Expression(e) => e.generate(),
-            Node::Block(nodes) => {
-                let mut result = String::new();
-                for node in nodes {
-                    result.push_str(node.generate().as_str());
-                }
-                result
-            }
-        }
-    }
-}
+// pub enum Node {
+//     Block(Vec<Box<Node>>),
+//     String(String),
+//     Template(Template),
+//     Expression(Instruction),
+// }
+//
+// impl Generate for Node {
+//     fn generate(&self) -> String {
+//         match self {
+//             Node::String(s) => s.to_string(),
+//             Node::Template(_) => "template".to_string(),
+//             Node::Expression(e) => e.generate(),
+//             Node::Block(nodes) => {
+//                 let mut result = String::new();
+//                 for node in nodes {
+//                     result.push_str(node.generate().as_str());
+//                 }
+//                 result
+//             }
+//         }
+//     }
+// }
 pub struct Block;
 
 impl Generate for Instruction {
@@ -74,28 +69,6 @@ impl Template {
     }
 }
 
-
-struct ContractData {
-    memory_layout: Vec<HashMap<String, String>>,
-    instructions: String,
-    expmods: String,
-    domains: String,
-    denominators: String,
-    denominator_invs: String,
-    compositions: String,
-    registry: Box<dyn Registry>,
-    denom_registry: Box<dyn Registry>,
-    nume_registry: Box<dyn Registry>,
-    ctx: Context,
-}
-
-#[derive(Clone, Debug)]
-struct Memory {
-    slot: String,
-    start: U256,
-    end: U256,
-}
-
 #[derive(Clone, Debug)]
 struct Instruction {
     left: String,
@@ -103,173 +76,7 @@ struct Instruction {
     operator: String,
 }
 
-#[derive(Clone, Debug)]
-pub enum Comment {
-    Memory(Memory),
-    Instruction(Instruction),
-    ConstraintData(usize, String, Vec<String>), // (index, type, name)
-    Constraint(String, String), // (name, expression)
-    None,
-}
-
 pub struct Expression(ASTNode);
-
-impl Comment {
-    pub(crate) fn extract(&self, data: &mut ContractData) {
-        match self {
-            Comment::Memory(m) => {
-                let mut map: HashMap<String, String> = HashMap::new();
-                let Memory { slot, start, end } = m;
-                map.insert("start".to_string(), format!("{:#x}", start));
-                map.insert("end".to_string(), format!("{:#x}", end));
-                map.insert("description".to_string(), slot.to_string());
-
-                data.memory_layout.push(map);
-
-                // intermediate_value
-                if end - start == U256::from(32) {
-                    let mut key = slot.trim_start_matches("intermediate_value/");
-                    key = key.trim_start_matches("periodic_column/");
-
-                    data.registry.store(format!("{}", slot.trim_start_matches("intermediate_value/")), format!("{:#x}", start));
-                    let key = key.replace("/", "__");
-                    data.registry.store(key, format!("{:#x}", start));
-                    ()
-                }
-                //
-                let mut i = start.clone();
-                let mut counter = 0;
-                while i < *end {
-                    data.registry.store(format!("{}{}", slot.trim_end_matches('s'), counter), format!("{:#x}", start + U256::from(counter) * U256::from(32)));
-                    data.registry.store(format!("{}[{}]", slot, counter), format!("{:#x}", start + U256::from(counter) * U256::from(32)));
-                    i += U256::from(32);
-                    counter += 1;
-                }
-                data.registry.store(slot.clone(), format!("{:#x}", start));
-            }
-            Comment::Instruction(e) => {
-                // process the expression
-                let ast = ASTParser::parse(e.right.as_str());
-                let (code, count) = SolGenerator::generate(&ast, &data.registry);
-
-                // calculate the address
-                let (name, index) = Comment::extract_left(&e.left);
-                let name = match index {
-                    0 => name.to_string(),
-                    _ => format!("{}{}", name.trim_end_matches('s'), index)
-                };
-                let slot = match data.registry.load(&name) {
-                    None => {
-                        println!("### warn ### No memory slot found for: {}", name);
-                        return;
-                    }
-                    Some(address) => address
-                }.to_string();
-
-                data.registry.store(ast.to_string(), slot.clone());
-
-                let a = match count {
-                    0 => format!("{{\nlet val := {}\nmstore({}, val)\n}}", code, slot),
-                    _ => format!("{{\n{}\nmstore({}, val_{})\n}}", code, slot, count)
-                };
-                // code
-
-                let a = format!("// {} = {}\n{}\n", e.left, e.right, a);
-
-                data.instructions.push_str(a.as_str());
-            }
-            Comment::None => {}
-            Comment::ConstraintData(index, type_, constraints) => {
-                let (registry, name) = match type_.as_str() {
-                    "Numerator" => (&mut data.nume_registry, "domains"),
-                    "Denominator" => (&mut data.denom_registry, "denominator_invs"),
-                    _ => (&mut data.denom_registry, "")
-                };
-
-                for constraint in constraints {
-                    registry.store(constraint.to_string(), format!("{}[{}]", name, index));
-                }
-            }
-            Comment::Constraint(name, expr) => {
-                // process the expression
-                let ast = ASTParser::parse(expr.as_str());
-                let (code, count) = SolGenerator::generate(&ast, &data.registry);
-
-
-                // &data.registry.store(e.left.clone(), slot.to_string());
-
-                let numerator = match data.nume_registry.load(name) {
-                    None => {
-                        println!("### warn ### No numerator found for: {}", name);
-                        "1"
-                    }
-                    Some(str) => str
-                };
-
-                let numerator = match numerator {
-                    "1" =>
-                        "".to_string(),
-                    _ =>{
-                        let slot = match data.registry.load(&numerator.to_string()) {
-                            None => {
-                                println!("### warn ### No memory slot found for: {}", numerator);
-                                return;
-                            }
-                            Some(address) => address
-                        };
-                        format!("// Numerator\n// val *= numerator\nval := mulmod(val, mload({}), PRIME)\n", slot)
-                    }
-                };
-
-                let denominator = match data.denom_registry.load(name) {
-                    None => {
-                        println!("### warn ### No denominator found for: {}", name);
-                        "1"
-                    }
-                    Some(str) => str
-                };
-
-                let denominator = match denominator {
-                    "1" =>
-                        "".to_string(),
-                    _ => {
-                        let slot = match data.registry.load(&denominator.to_string()) {
-                            None => {
-                                println!("### warn ### No memory slot found for: {}", denominator);
-                                return;
-                            }
-                            Some(address) => address
-                        };
-                        format!("// Denominator\n// val *= denominator inverse\n val := mulmod(val, mload({}), PRIME)\n", slot)
-                    }
-                };
-
-                let mut a = match count {
-                    0 => format!("{{\nlet val :={}\n{}\n{}\n", code, numerator, denominator),
-                    _ => format!("{{\n{}\nlet val := val_{}\n{}\n{}\n", code, count, numerator, denominator)
-                };
-
-                a.push_str("res := addmod(res, mulmod(val, composition_alpha_pow, PRIME), PRIME)\ncomposition_alpha_pow := mulmod(composition_alpha_pow, composition_alpha, PRIME)\n");
-                // code
-
-                let a = format!("\n//Constraint expression for {}: {}\n{}\n}}\n", name, expr, a);
-
-                data.compositions.push_str(a.as_str());
-            }
-        }
-    }
-
-    fn extract_left(left: &str) -> (&str, usize) {
-        let re = Regex::new(r"(?P<name>[a-zA-Z0-9_/]+)\[(?P<index>\d+)\]").unwrap();
-        if let Some(captures) = re.captures(left) {
-            let name = captures.name("name").unwrap().as_str();
-            let index = captures.name("index").unwrap().as_str();
-            (name, index.parse().unwrap())
-        } else {
-            (left.clone(), 0)
-        }
-    }
-}
 
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
@@ -338,41 +145,46 @@ fn extract_denom_invs(code: &String) -> HashMap<String, String> {
 
 #[cfg(test)]
 mod test {
+    use crate::{extract_comment, extract_denom_invs, extract_oods_values, read, TEMPLATES};
+    use primitive_types::U256;
+    use regex::Regex;
+    use registry::hashmap_registry::HashMapRegistry;
+    use registry::Registry;
     use std::collections::HashMap;
     use std::error::Error;
     use std::fs;
     use std::fs::File;
     use std::io::Write;
-    use primitive_types::U256;
-    use regex::Regex;
+    use structure::comment::Comment;
     use tera::Context;
-    use registry::hashmap_registry::HashMapRegistry;
-    use registry::Registry;
-    use crate::{ContractData, read, TEMPLATES, extract_comment, extract_oods_values, Node, Generate, Template, Instruction, Comment, Memory, extract_denom_invs};
+    use generator::Generator;
+    use generator::sol_generator::{ContractData, SolGenerator};
 
     #[test]
     fn main() {
-        let data = &mut ContractData {
-            memory_layout: Vec::new(),
-            instructions: String::new(),
-            expmods: String::new(),
-            domains: String::new(),
-            denominators: String::new(),
-            denominator_invs: String::new(),
-            compositions: String::new(),
-            registry: Box::new(HashMapRegistry {
-                memory: HashMap::new()
-            }),
-            denom_registry: Box::new(HashMapRegistry {
-                memory: HashMap::new()
-            }),
-            nume_registry: Box::new(HashMapRegistry {
-                memory: HashMap::new()
-            }),
-            ctx: Context::new(),
+        let mut generator = SolGenerator {
+            data: ContractData {
+                memory_layout: Vec::new(),
+                instructions: String::new(),
+                expmods: String::new(),
+                domains: String::new(),
+                denominators: String::new(),
+                denominator_invs: String::new(),
+                compositions: String::new(),
+                registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
+                denom_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
+                nume_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
+                ctx: Context::new(),
+            }
         };
 
-        &data.registry.store("point".to_string(), "0x440".to_string());
+        &generator.data.registry.store("point".to_string(), "0x440".to_string());
 
         let code = read("examples/cpu-constraint-poly/CpuConstraintPoly.sol");
         let comments = extract_comment(&code);
@@ -380,13 +192,14 @@ mod test {
         // find the oods value's memory addresses
         let oods = extract_oods_values(&code);
         for (key, value) in oods {
-            data.registry.store(key, value);
+            generator.data.registry.store(key, value);
         }
 
         // find the denominator_invs's memory addresses
         let oods = extract_denom_invs(&code);
+        println!("{:?}", oods);
         for (key, value) in oods {
-            data.registry.store(key, value);
+            generator.data.registry.store(key, value);
         }
 
         let mut current_processor = "";
@@ -418,11 +231,11 @@ mod test {
                              let end_value = &captures[2];
                              let description = &captures[3].trim();
 
-                             Comment::Memory(Memory {
-                                 slot: description.to_string(),
-                                 start: U256::from_str_radix(start_value, 16).unwrap(),
-                                 end: U256::from_str_radix(end_value, 16).unwrap(),
-                             })
+                             Comment::Memory(
+                                 description.to_string(),
+                                 U256::from_str_radix(start_value, 16).unwrap(),
+                                 U256::from_str_radix(end_value, 16).unwrap(),
+                             )
                          })),
                     ];
                     for (regex, processor) in patterns {
@@ -440,22 +253,22 @@ mod test {
 
                              let operator = &captures[2];
                              let right = &captures[3];
-                             Comment::Instruction(Instruction {
-                                 left: left.to_string(),
-                                 right: right.to_string(),
-                                 operator: operator.to_string(),
-                             })
+                             Comment::Instruction(
+                                 left.to_string(),
+                                 right.to_string(),
+                                 operator.to_string(),
+                             )
                          })),
                         (Regex::new(r"//\s*(.+?)\s*([+\-*/]?=)\s*(.+)").unwrap(),
                          Box::new(|captures: &regex::Captures| {
                              let left = &captures[1];
                              let operator = &captures[2];
                              let right = &captures[3];
-                             Comment::Instruction(Instruction {
-                                 left: left.to_string(),
-                                 right: right.to_string(),
-                                 operator: operator.to_string(),
-                             })
+                             Comment::Instruction(
+                                 left.to_string(),
+                                 right.to_string(),
+                                 operator.to_string(),
+                             )
                          })),
                     ];
                     for (regex, processor) in patterns {
@@ -485,11 +298,10 @@ mod test {
                                  }
                              }
 
-                             Comment::Instruction(Instruction {
-                                 left: left.to_string(),
-                                 right: right.to_string(),
-                                 operator: operator.to_string(),
-                             })
+                             Comment::Instruction(
+                                 left.to_string(),
+                                 right.to_string(),
+                                 operator.to_string(), )
                          })),
                         // Denominator for constraints: 'cpu/decode/opcode_range_check/bit', 'diluted_check/permutation/step0', 'diluted_check/step'.
                         (Regex::new(r"//\s*(Denominator|Numerator)\s*for\s*constraints:\s*((?:'[^']*'(?:,\s*)?)*)\s*").unwrap(),
@@ -522,11 +334,15 @@ mod test {
                              let left = &captures[1];
                              let operator = &captures[2];
                              let right = &captures[3];
-                             Comment::Instruction(Instruction {
-                                 left: left.to_string(),
-                                 right: right.to_string(),
-                                 operator: operator.to_string(),
-                             })
+
+                             let (denominator, index) = Comment::extract_left(left);
+                             let (domain, index ) = Comment::extract_left(right);
+
+                             Comment::Instruction(
+                                 left.to_string(),
+                                 right.to_string(),
+                                 operator.to_string(),
+                             )
                          })),
                     ];
                     for (regex, processor) in patterns {
@@ -536,7 +352,7 @@ mod test {
                     }
                 }
                 "denominator_invs" => {
-                    data.denominator_invs = comment;
+                    generator.data.denominator_invs = comment;
                 }
                 "compositions" => {
                     let patterns: Vec<(Regex, Box<dyn Fn(&regex::Captures) -> Comment>)> = vec![
@@ -546,11 +362,11 @@ mod test {
                              let left = &captures[1];
                              let operator = &captures[2];
                              let right = &captures[3];
-                             Comment::Instruction(Instruction {
-                                 left: left.to_string(),
-                                 right: right.to_string(),
-                                 operator: operator.to_string(),
-                             })
+                             Comment::Instruction(
+                                 left.to_string(),
+                                 right.to_string(),
+                                 operator.to_string(),
+                             )
                          })),
                         // Constraint expression for cpu/decode/opcode_range_check/bit: cpu__decode__opcode_range_check__bit_0 * cpu__decode__opcode_range_check__bit_0 - cpu__decode__opcode_range_check__bit_0.
                         (Regex::new(r"//\s*Constraint\s+expression\s+for\s+([a-zA-Z0-9/_]+)\s*:\s*(.+)").unwrap(),
@@ -569,14 +385,14 @@ mod test {
                 _ => {}
             }
 
-            c.extract(data);
+            generator.generate(&c);
         }
 
-        data.ctx.insert("memory_layout", &data.memory_layout);
-        data.ctx.insert("instructions", &data.instructions);
-        data.ctx.insert("compositions", &data.compositions);
+        generator.data.ctx.insert("memory_layout", &generator.data.memory_layout);
+        generator.data.ctx.insert("instructions", &generator.data.instructions);
+        generator.data.ctx.insert("compositions", &generator.data.compositions);
 
-        match TEMPLATES.render("sol/cpu.sol.template", &data.ctx) {
+        match TEMPLATES.render("sol/cpu.sol.template", &generator.data.ctx) {
             Ok(s) => {
                 fs::create_dir_all("generated").expect("Failed to create directory");
                 let mut file = File::create("generated/test.move").expect("Failed to create Move file");
@@ -593,43 +409,43 @@ mod test {
         };
     }
 
-    #[test]
-    fn demo() {
-        let code = Node::Block(
-            vec![
-                Box::new(Node::String(String::from("Hello"))),
-                Box::new(Node::String(String::from("\n"))),
-                Box::new(Node::Template(Template {
-                    name: "template".to_string(),
-                    ctx: Box::new(Context::new()),
-                })),
-                Box::new(Node::Block(vec![
-                    Box::new(Node::String(String::from("\nBlock start"))),
-                    Box::new(Node::Template(Template {
-                        name: "template".to_string(),
-                        ctx: Box::new(Context::new()),
-                    })),
-                    Box::new(Node::Expression(Instruction {
-                        left: "left".to_string(),
-                        right: "right".to_string(),
-                        operator: "+".to_string(),
-                    })),
-                    Box::new(Node::String(String::from("Block end\n"))),
-                ])),
-                Box::new(Node::Expression(Instruction {
-                    left: "left".to_string(),
-                    right: "right".to_string(),
-                    operator: "+".to_string(),
-                })),
-            ]
-        );
-
-        let s = format!("{}", code.generate());
-
-        fs::create_dir_all("generated").expect("Failed to create directory");
-        let mut file = File::create("generated/test").expect("Failed to create Move file");
-        file.write_all(s.as_bytes()).expect("Failed to write to Move file");
-    }
+    // #[test]
+    // fn demo() {
+    //     let code = Node::Block(
+    //         vec![
+    //             Box::new(Node::String(String::from("Hello"))),
+    //             Box::new(Node::String(String::from("\n"))),
+    //             Box::new(Node::Template(Template {
+    //                 name: "template".to_string(),
+    //                 ctx: Box::new(Context::new()),
+    //             })),
+    //             Box::new(Node::Block(vec![
+    //                 Box::new(Node::String(String::from("\nBlock start"))),
+    //                 Box::new(Node::Template(Template {
+    //                     name: "template".to_string(),
+    //                     ctx: Box::new(Context::new()),
+    //                 })),
+    //                 Box::new(Node::Expression(Instruction {
+    //                     left: "left".to_string(),
+    //                     right: "right".to_string(),
+    //                     operator: "+".to_string(),
+    //                 })),
+    //                 Box::new(Node::String(String::from("Block end\n"))),
+    //             ])),
+    //             Box::new(Node::Expression(Instruction {
+    //                 left: "left".to_string(),
+    //                 right: "right".to_string(),
+    //                 operator: "+".to_string(),
+    //             })),
+    //         ]
+    //     );
+    //
+    //     let s = format!("{}", code.generate());
+    //
+    //     fs::create_dir_all("generated").expect("Failed to create directory");
+    //     let mut file = File::create("generated/test").expect("Failed to create Move file");
+    //     file.write_all(s.as_bytes()).expect("Failed to write to Move file");
+    // }
 
     #[test]
     fn test_regex() {

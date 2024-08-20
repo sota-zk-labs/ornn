@@ -4,11 +4,11 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/ast/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/generator/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/parser/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/registry/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/registryy/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/structure/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

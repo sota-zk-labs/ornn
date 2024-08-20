@@ -7,7 +7,7 @@ edition = "2021"
 members = [
     "crates/parser",
     "crates/generator",
-    "crates/ast",
+    "crates/structure",
     "crates/registry",
 ]
 
@@ -21,7 +21,7 @@ hex = "0.4.3"
 
 generator = { path = "crates/generator" }
 parser = { path = "crates/parser" }
-ast = { path = "crates/ast" }
+structure = { path = "crates/structure" }
 registry = { path = "crates/registry" }
 
 [dependencies]
@@ -34,6 +34,6 @@ hex = { workspace = true }
 
 generator = { workspace = true }
 parser = { workspace = true }
-ast = { workspace = true }
+structure = { workspace = true }
 registry = { workspace = true }
 

@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ast = {workspace = true}
-registry = {workspace = true}
-parser = {workspace = true}
+tera = { workspace = true}
+
+primitive-types = { workspace = true }
+structure = { workspace = true }
+registry = { workspace = true }
+parser = { workspace = true }

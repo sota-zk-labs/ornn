@@ -37,3 +37,5 @@ Strategy:
 ## How To Use
 
 ## Configuration
+
+bug: current denominator is not correct
