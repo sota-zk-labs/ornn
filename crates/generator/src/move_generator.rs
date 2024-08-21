@@ -13,12 +13,16 @@ pub struct MoveGenerator {
 }
 
 impl MoveGenerator {
+
+    fn convert_mem_to_slot(str: &str) -> String {
+        (U256::from_str_radix(str, 16).unwrap() / U256::from(32)).to_string()
+    }
     fn generate_code_recursive(&self, ast: &ASTNode, code: &mut String, temp_var_counter: &mut usize) -> String {
         let registry = &self.data.registry;
         match registry.load(&ast.to_string()) {
             None => {}
-            Some(str) => {
-                let node = format!("/*{}*/ mload({})", &ast.to_string(), str);
+            Some(slot) => {
+                let node = format!("/*{}*/ *borrow(&ctx, {})", &ast.to_string(), Self::convert_mem_to_slot(slot));
                 return node;
             }
         }
@@ -26,10 +30,10 @@ impl MoveGenerator {
         match ast {
             ASTNode::Variable(var) => {
                 let str = match var {
-                    Variable::String(str) => {
-                        format!("/*{}*/ mload({})", var, match registry.load(str) {
+                    Variable::String(slot) => {
+                        format!("/*{}*/ *borrow(&ctx, {})", var, match registry.load(slot) {
                             None => { "### unknow ###" }
-                            Some(str) => { str }
+                            Some(slot) => { slot }
                         })
                     }
                     Variable::U256(u256) => { u256.to_string() }
@@ -41,11 +45,11 @@ impl MoveGenerator {
                 let right_expr = self.generate_code_recursive(right, code, temp_var_counter);
 
                 let operation_code = match op.as_str() {
-                    "+" => format!("({} + {} % PRIME)", left_expr, right_expr),
-                    "-" => format!("({} - {} % PRIME)", left_expr, right_expr),
-                    "*" => format!("fmul({}, {}, PRIME)", left_expr, right_expr),
-                    "^" => format!("fexp({}, {}, PRIME)", left_expr, right_expr),
-                    "/" => format!("div({}, {})", left_expr, right_expr),
+                    "+" => format!("(({} + {}) % PRIME)", left_expr, right_expr),
+                    "-" => format!("(({} - {}) % PRIME)", left_expr, right_expr),
+                    "*" => format!("fmul({}, {})", left_expr, right_expr),
+                    "^" => format!("fexp({}, {})", left_expr, right_expr),
+                    "/" => format!("{} / {}", left_expr, right_expr),
                     "**" => format!("### pow pow con cac ###({}, {})", left_expr, right_expr),
 
                     _ => panic!("Unsupported operator"),
@@ -54,7 +58,7 @@ impl MoveGenerator {
                 *temp_var_counter += 1;
                 let temp_var = format!("val_{}", temp_var_counter);
 
-                code.push_str(&format!("let {} := {}\n", temp_var, operation_code));
+                code.push_str(&format!("let {} = {};\n", temp_var, operation_code));
                 temp_var
             }
         }
@@ -129,17 +133,16 @@ impl Generator<Comment, ()> for MoveGenerator {
                 self.data.registry.store(ast.to_string(), slot.clone());
 
                 let a = match count {
-                    0 => format!("{{\nlet val := {}\nmstore({}, val)\n}}", code, slot),
-                    _ => format!("{{\n{}\npushback({}, val)\n}}", code, block_name)
+                    0 => format!("{{\nlet val = {};\n*vector::borrow_mut(&mut ctx, {}) = val;\n}};", code, Self::convert_mem_to_slot(slot.as_str())),
+                    _ => format!("{{\n{}\n*vector::borrow_mut(&mut ctx, {}) = val_{};\n}};", code, Self::convert_mem_to_slot(slot.as_str()), count)
                 };
-                // code
 
                 let a = format!("// {} = {}\n{}\n", left, right, a);
 
 
-                match block_name.as_str() {
+                match block_name {
                     "expmods" => self.data.expmods.push_str(a.as_str()),
-                    "domains" => self.data.expmods.push_str(a.as_str()),
+                    "domains" => self.data.domains.push_str(a.as_str()),
                     "denominators" => self.data.denominators.push_str(a.as_str()),
                     "compositions" => self.data.compositions.push_str(a.as_str()),
                     _ => self.data.instructions.push_str(a.as_str())
@@ -186,7 +189,7 @@ impl Generator<Comment, ()> for MoveGenerator {
                             }
                             Some(address) => address
                         };
-                        format!("// Numerator\n// val *= numerator\nval := mulmod(val, mload({}), PRIME)\n", slot)
+                        format!("// Numerator\n// val *= numerator\nval = fmul(val, *borrow(&ctx, {}));\n", Self::convert_mem_to_slot(slot))
                     }
                 };
 
@@ -214,19 +217,19 @@ impl Generator<Comment, ()> for MoveGenerator {
                             }
                             Some(address) => address
                         };
-                        format!("// Denominator\n// val *= denominator inverse\n val := mulmod(val, mload({}), PRIME)\n", slot)
+                        format!("// Denominator\n// val *= denominator inverse\n val = fmul(val, *borrow(&ctx, {}));\n", Self::convert_mem_to_slot(slot))
                     }
                 };
 
                 let mut a = match count {
-                    0 => format!("{{\nlet val :={}\n{}\n{}\n", code, numerator, denominator),
-                    _ => format!("{{\n{}\nlet val := val_{}\n{}\n{}\n", code, count, numerator, denominator)
+                    0 => format!("{{\nlet val ={};\n{}\n{}\n", code, numerator, denominator),
+                    _ => format!("{{\n{}\nlet val = val_{};\n{}\n{}\n", code, count, numerator, denominator)
                 };
 
-                a.push_str("res := addmod(res, mulmod(val, composition_alpha_pow, PRIME), PRIME)\ncomposition_alpha_pow := mulmod(composition_alpha_pow, composition_alpha, PRIME)\n");
+                a.push_str("res = (res + fmul(val, composition_alpha_pow)) % PRIME;\ncomposition_alpha_pow = fmul(composition_alpha_pow, composition_alpha);\n");
                 // code
 
-                let a = format!("\n//Constraint expression for {}: {}\n{}\n}}\n", name, expr, a);
+                let a = format!("\n//Constraint expression for {}: {}\n{}\n}};\n", name, expr, a);
 
                 self.data.compositions.push_str(a.as_str());
             }

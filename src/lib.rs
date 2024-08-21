@@ -159,6 +159,7 @@ mod test {
     use tera::Context;
     use generator::{ContractData, Generator};
     use generator::move_generator::MoveGenerator;
+    use generator::sol_generator::SolGenerator;
 
     #[test]
     fn main() {
@@ -254,17 +255,6 @@ mod test {
                          Box::new(|captures: &regex::Captures| {
                              let left = &captures[1];
 
-                             let operator = &captures[2];
-                             let right = &captures[3];
-                             Comment::Instruction(
-                                 left.to_string(),
-                                 right.to_string(),
-                                 operator.to_string(),
-                             )
-                         })),
-                        (Regex::new(r"//\s*(.+?)\s*([+\-*/]?=)\s*(.+)").unwrap(),
-                         Box::new(|captures: &regex::Captures| {
-                             let left = &captures[1];
                              let operator = &captures[2];
                              let right = &captures[3];
                              Comment::Instruction(
@@ -398,6 +388,8 @@ mod test {
         generator.data.ctx.insert("memory_layout", &generator.data.memory_layout);
         generator.data.ctx.insert("expmods", &generator.data.expmods);
         generator.data.ctx.insert("domains", &generator.data.domains);
+        println!("{}", generator.data.domains);
+        println!("{}", generator.data.expmods);
         generator.data.ctx.insert("denominators", &generator.data.denominators);
         generator.data.ctx.insert("instructions", &generator.data.instructions);
         generator.data.ctx.insert("compositions", &generator.data.compositions);

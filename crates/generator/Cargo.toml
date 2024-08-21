@@ -10,3 +10,4 @@ primitive-types = { workspace = true }
 structure = { workspace = true }
 registry = { workspace = true }
 parser = { workspace = true }
+log = "0.4.22"
