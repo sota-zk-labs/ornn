@@ -63,7 +63,7 @@ impl ASTParser {
 
         while let Some(ch) = chars.next() {
             match ch {
-                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' | '[' | ']' => {
+                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' | '[' | ']' | '.' => {
                     current_expr.push(ch);
                     in_expression = true;
                 }

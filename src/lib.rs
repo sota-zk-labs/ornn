@@ -174,6 +174,9 @@ mod test {
                 registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
+                domain_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
                 denom_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
@@ -207,7 +210,7 @@ mod test {
         let mut current_domain = 0;
 
         for comment in comments {
-            let mut c = Comment::None;
+            let mut c = vec![];
 
             current_processor = match comment.as_str() {
                 "// The Memory map during the execution of this contract is as follows:" => "layout",
@@ -240,7 +243,7 @@ mod test {
                     ];
                     for (regex, processor) in patterns {
                         if let Some(captures) = regex.captures(&comment.clone()) {
-                            c = processor(&captures);
+                            c.push(processor(&captures));
                         }
                     }
                 }
@@ -273,7 +276,7 @@ mod test {
                     ];
                     for (regex, processor) in patterns {
                         if let Some(captures) = regex.captures(&comment.clone()) {
-                            c = processor(&captures);
+                            c.push(processor(&captures));
                         }
                     }
                 }
@@ -322,12 +325,12 @@ mod test {
                     ];
                     for (regex, mut processor) in patterns {
                         if let Some(captures) = regex.captures(&comment.clone()) {
-                            c = processor(&captures);
+                            c.push(processor(&captures));
                         }
                     }
                 }
                 "denominators" => {
-                    let patterns: Vec<(Regex, Box<dyn Fn(&regex::Captures) -> Comment>)> = vec![
+                    let patterns: Vec<(Regex, Box<dyn Fn(&regex::Captures) -> Vec<Comment>>)> = vec![
                         // expmods[0] = point^(trace_length / 2048).
                         (Regex::new(r"//\s*(.+?)\s*([+\-*/]?=)\s*(.+)").unwrap(),
                          Box::new(|captures: &regex::Captures| {
@@ -335,14 +338,16 @@ mod test {
                              let operator = &captures[2];
                              let right = &captures[3];
 
-                             let (denominator, index) = Comment::extract_left(left);
-                             let (domain, index ) = Comment::extract_left(right);
+                             let (_, denominator) = Comment::extract_left(left);
+                             let (_, domain ) = Comment::extract_left(right);
 
-                             Comment::Instruction(
+                             vec![Comment::UpdateConstrainsData(
+                                 denominator, domain
+                             ), Comment::Instruction(
                                  left.to_string(),
                                  right.to_string(),
                                  operator.to_string(),
-                             )
+                             )]
                          })),
                     ];
                     for (regex, processor) in patterns {
@@ -378,14 +383,16 @@ mod test {
                     ];
                     for (regex, processor) in patterns {
                         if let Some(captures) = regex.captures(&comment.clone()) {
-                            c = processor(&captures);
+                            c.push(processor(&captures));
                         }
                     }
                 }
                 _ => {}
             }
 
-            generator.generate(&c);
+            for comment in c {
+                generator.generate(&comment);
+            }
         }
 
         generator.data.ctx.insert("memory_layout", &generator.data.memory_layout);

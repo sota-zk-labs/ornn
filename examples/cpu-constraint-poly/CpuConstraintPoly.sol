@@ -2369,10 +2369,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for memory/multi_column_perm/perm/last: column11_inter1_row0 - memory/multi_column_perm/perm/public_memory_prod.
+              // Constraint expression for memory/multi_column_perm/perm/last: column11_inter1_row0 - memory__multi_column_perm__perm__public_memory_prod.
               let val := addmod(
                 /*column11_inter1_row0*/ mload(0x1cc0),
-                sub(PRIME, /*memory/multi_column_perm/perm/public_memory_prod*/ mload(0x200)),
+                sub(PRIME, /*memory__multi_column_perm__perm__public_memory_prod*/ mload(0x200)),
                 PRIME)
 
               // Numerator: 1.
@@ -2533,10 +2533,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for range_check16/perm/last: column11_inter1_row1 - range_check16/perm/public_memory_prod.
+              // Constraint expression for range_check16/perm/last: column11_inter1_row1 - range_check16__perm__public_memory_prod.
               let val := addmod(
                 /*column11_inter1_row1*/ mload(0x1ce0),
-                sub(PRIME, /*range_check16/perm/public_memory_prod*/ mload(0x240)),
+                sub(PRIME, /*range_check16__perm__public_memory_prod*/ mload(0x240)),
                 PRIME)
 
               // Numerator: 1.
@@ -2663,10 +2663,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for diluted_check/permutation/last: column10_inter1_row0 - diluted_check/permutation/public_memory_prod.
+              // Constraint expression for diluted_check/permutation/last: column10_inter1_row0 - diluted_check__permutation__public_memory_prod.
               let val := addmod(
                 /*column10_inter1_row0*/ mload(0x1c80),
-                sub(PRIME, /*diluted_check/permutation/public_memory_prod*/ mload(0x2c0)),
+                sub(PRIME, /*diluted_check__permutation__public_memory_prod*/ mload(0x2c0)),
                 PRIME)
 
               // Numerator: 1.
@@ -2696,10 +2696,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for diluted_check/first_element: column2_row0 - diluted_check/first_elm.
+              // Constraint expression for diluted_check/first_element: column2_row0 - diluted_check__first_elm.
               let val := addmod(
                 /*column2_row0*/ mload(0xb20),
-                sub(PRIME, /*diluted_check/first_elm*/ mload(0x2e0)),
+                sub(PRIME, /*diluted_check__first_elm*/ mload(0x2e0)),
                 PRIME)
 
               // Numerator: 1.
@@ -2753,10 +2753,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for diluted_check/last: column9_inter1_row0 - diluted_check/final_cum_val.
+              // Constraint expression for diluted_check/last: column9_inter1_row0 - diluted_check__final_cum_val.
               let val := addmod(
                 /*column9_inter1_row0*/ mload(0x1c40),
-                sub(PRIME, /*diluted_check/final_cum_val*/ mload(0x340)),
+                sub(PRIME, /*diluted_check__final_cum_val*/ mload(0x340)),
                 PRIME)
 
               // Numerator: 1.
@@ -3146,10 +3146,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for pedersen/hash0/init/x: column6_row1 - pedersen/shift_point.x.
+              // Constraint expression for pedersen/hash0/init/x: column6_row1 - pedersen__shift_point.x.
               let val := addmod(
                 /*column6_row1*/ mload(0x1280),
-                sub(PRIME, /*pedersen/shift_point.x*/ mload(0x360)),
+                sub(PRIME, /*pedersen__shift_point.x*/ mload(0x360)),
                 PRIME)
 
               // Numerator: 1.
@@ -3164,10 +3164,10 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for pedersen/hash0/init/y: column6_row3 - pedersen/shift_point.y.
+              // Constraint expression for pedersen/hash0/init/y: column6_row3 - pedersen__shift_point.y.
               let val := addmod(
                 /*column6_row3*/ mload(0x12c0),
-                sub(PRIME, /*pedersen/shift_point.y*/ mload(0x380)),
+                sub(PRIME, /*pedersen__shift_point.y*/ mload(0x380)),
                 PRIME)
 
               // Numerator: 1.

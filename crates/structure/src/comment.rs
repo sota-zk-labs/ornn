@@ -7,6 +7,7 @@ pub enum Comment {
     Memory(String, U256, U256), // (slot, start, end)
     Instruction(String, String, String), // (left, right, op)
     ConstraintData(usize, String, Vec<String>), // (index, type, name)
+    UpdateConstrainsData(usize, usize), // (denom, domain)
     Constraint(String, String), // (name, expression)
     None,
 }

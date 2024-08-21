@@ -9,7 +9,7 @@ use structure::comment::Comment;
 use crate::{Generator, GeneratorInput, GeneratorOutput};
 
 pub struct SolGenerator {
-    pub data: ContractData
+    pub data: ContractData,
 }
 
 pub struct ContractData {
@@ -21,6 +21,7 @@ pub struct ContractData {
     pub denominator_invs: String,
     pub compositions: String,
     pub registry: Box<dyn Registry>,
+    pub domain_registry: Box<dyn Registry>,
     pub denom_registry: Box<dyn Registry>,
     pub nume_registry: Box<dyn Registry>,
     pub ctx: Context,
@@ -93,7 +94,7 @@ impl GeneratorOutput for () {}
 impl GeneratorInput for Comment {}
 
 impl Generator<Comment, ()> for SolGenerator {
-    fn generate(&mut self, comment: &Comment) -> (){
+    fn generate(&mut self, comment: &Comment) -> () {
         match comment {
             Comment::Memory(slot, start, end) => {
                 let mut map: HashMap<String, String> = HashMap::new();
@@ -153,7 +154,14 @@ impl Generator<Comment, ()> for SolGenerator {
 
                 let a = format!("// {} = {}\n{}\n", left, right, a);
 
-                self.data.instructions.push_str(a.as_str());
+
+                match name.as_str() {
+                    "expmods" => self.data.expmods.push_str(a.as_str()),
+                    "domains" => self.data.expmods.push_str(a.as_str()),
+                    "denominators" => self.data.denominators.push_str(a.as_str()),
+                    "compositions" => self.data.compositions.push_str(a.as_str()),
+                    _ => self.data.instructions.push_str(a.as_str())
+                }
             }
             Comment::None => {}
             Comment::ConstraintData(index, type_, constraints) => {
@@ -166,6 +174,9 @@ impl Generator<Comment, ()> for SolGenerator {
                 for constraint in constraints {
                     registry.store(constraint.to_string(), format!("{}[{}]", name, index));
                 }
+            }
+            Comment::UpdateConstrainsData(denom, domain) => {
+                self.data.domain_registry.store(format!("denominator_invs[{}]", domain.to_string()), format!("denominator_invs[{}]", denom.to_string()));
             }
             Comment::Constraint(name, expr) => {
                 // process the expression
@@ -209,7 +220,12 @@ impl Generator<Comment, ()> for SolGenerator {
                     "1" =>
                         "".to_string(),
                     _ => {
-                        let slot = match self.data.registry.load(&denominator.to_string()) {
+                        let invs = match self.data.domain_registry.load(&denominator.to_string()) {
+                            None => denominator.to_string(),
+                            Some(str) => str.to_string()
+                        };
+
+                        let slot = match self.data.registry.load(&invs) {
                             None => {
                                 println!("### warn ### No memory slot found for: {}", denominator);
                                 return;
@@ -264,13 +280,16 @@ mod tests {
                 denominator_invs: String::new(),
                 compositions: String::new(),
                 registry,
+                domain_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
                 denom_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
                 nume_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
-                ctx: Context::new()
+                ctx: Context::new(),
             }
         };
 
@@ -300,13 +319,16 @@ mod tests {
                 denominator_invs: String::new(),
                 compositions: String::new(),
                 registry,
+                domain_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
                 denom_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
                 nume_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
-                ctx: Context::new()
+                ctx: Context::new(),
             }
         };
 
@@ -340,13 +362,16 @@ mod tests {
                 denominator_invs: String::new(),
                 compositions: String::new(),
                 registry,
+                domain_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
                 denom_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
                 nume_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
-                ctx: Context::new()
+                ctx: Context::new(),
             }
         };
 
@@ -383,13 +408,16 @@ mod tests {
                 denominator_invs: String::new(),
                 compositions: String::new(),
                 registry,
+                domain_registry: Box::new(HashMapRegistry {
+                    memory: HashMap::new()
+                }),
                 denom_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
                 nume_registry: Box::new(HashMapRegistry {
                     memory: HashMap::new()
                 }),
-                ctx: Context::new()
+                ctx: Context::new(),
             }
         };
 
