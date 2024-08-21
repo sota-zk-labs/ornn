@@ -6,25 +6,10 @@ use parser::Parser;
 use structure::ast::{ASTNode, Variable};
 use registry::Registry;
 use structure::comment::Comment;
-use crate::{Generator, GeneratorInput, GeneratorOutput};
+use crate::{ContractData, Generator, GeneratorInput, GeneratorOutput};
 
 pub struct MoveGenerator {
     pub data: ContractData,
-}
-
-pub struct ContractData {
-    pub memory_layout: Vec<HashMap<String, String>>,
-    pub instructions: String,
-    pub expmods: String,
-    pub domains: String,
-    pub denominators: String,
-    pub denominator_invs: String,
-    pub compositions: String,
-    pub registry: Box<dyn Registry>,
-    pub domain_registry: Box<dyn Registry>,
-    pub denom_registry: Box<dyn Registry>,
-    pub nume_registry: Box<dyn Registry>,
-    pub ctx: Context,
 }
 
 impl MoveGenerator {
@@ -56,10 +41,10 @@ impl MoveGenerator {
                 let right_expr = self.generate_code_recursive(right, code, temp_var_counter);
 
                 let operation_code = match op.as_str() {
-                    "+" => format!("addmod({}, {}, PRIME)", left_expr, right_expr),
-                    "-" => format!("addmod({}, sub(PRIME, {}), PRIME)", left_expr, right_expr),
-                    "*" => format!("mulmod({}, {}, PRIME)", left_expr, right_expr),
-                    "^" => format!("expmod({}, {}, PRIME)", left_expr, right_expr),
+                    "+" => format!("({} + {} % PRIME)", left_expr, right_expr),
+                    "-" => format!("({} - {} % PRIME)", left_expr, right_expr),
+                    "*" => format!("fmul({}, {}, PRIME)", left_expr, right_expr),
+                    "^" => format!("fexp({}, {}, PRIME)", left_expr, right_expr),
                     "/" => format!("div({}, {})", left_expr, right_expr),
                     "**" => format!("### pow pow con cac ###({}, {})", left_expr, right_expr),
 
@@ -128,6 +113,7 @@ impl Generator<Comment, ()> for MoveGenerator {
 
                 // calculate the address
                 let (name, index) = Comment::extract_left(&left);
+                let block_name = name.clone();
                 let name = match index {
                     0 => name.to_string(),
                     _ => format!("{}{}", name.trim_end_matches('s'), index)
@@ -144,14 +130,14 @@ impl Generator<Comment, ()> for MoveGenerator {
 
                 let a = match count {
                     0 => format!("{{\nlet val := {}\nmstore({}, val)\n}}", code, slot),
-                    _ => format!("{{\n{}\nmstore({}, val_{})\n}}", code, slot, count)
+                    _ => format!("{{\n{}\npushback({}, val)\n}}", code, block_name)
                 };
                 // code
 
                 let a = format!("// {} = {}\n{}\n", left, right, a);
 
 
-                match name.as_str() {
+                match block_name.as_str() {
                     "expmods" => self.data.expmods.push_str(a.as_str()),
                     "domains" => self.data.expmods.push_str(a.as_str()),
                     "denominators" => self.data.denominators.push_str(a.as_str()),

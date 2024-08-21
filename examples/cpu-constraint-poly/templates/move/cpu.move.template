@@ -1,0 +1,55 @@
+module verifier_addr::cpu_constraint_poly {
+
+    use std::vector;
+    use std::vector::{push_back, borrow};
+
+    const PRIME: u256 = 0x800000000000011000000000000000000000000000000000000000000000001;
+
+    public fun expmod(a: u256, b: u256, k: u256): u256 {
+        0
+    }
+
+    public fun mulmod(a: u256, b: u256, k: u256): u256 {
+        0
+    }
+
+    public fun fallback(ctx: &vector<u256>): u256 {
+        let expmods = &mut vector[];
+        let domains = &mut vector[];
+        let denominators = &mut vector[];
+        let denominator_invs = &mut vector[];
+
+
+        {
+            // compute expmods
+            {{ expmods }}
+        }
+
+        {
+            // compute domains
+            {{ domains }}
+
+        }
+
+        {
+            // compute denominators
+            {{ denominators }}
+        }
+
+        {
+            // compute denominator_invs
+
+
+        }
+
+        let composition_alpha_pow = 1u256;
+
+        let composition_alpha = /*composition_alpha*/ borrow(ctx, 41);
+
+        {
+            // compute compositions
+            let tmp = ;
+            push_back(expmods, 2);
+        }
+    }
+}

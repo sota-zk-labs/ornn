@@ -157,12 +157,12 @@ mod test {
     use std::io::Write;
     use structure::comment::Comment;
     use tera::Context;
-    use generator::Generator;
-    use generator::sol_generator::{ContractData, SolGenerator};
+    use generator::{ContractData, Generator};
+    use generator::move_generator::MoveGenerator;
 
     #[test]
     fn main() {
-        let mut generator = SolGenerator {
+        let mut generator = MoveGenerator {
             data: ContractData {
                 memory_layout: Vec::new(),
                 instructions: String::new(),
@@ -402,7 +402,7 @@ mod test {
         generator.data.ctx.insert("instructions", &generator.data.instructions);
         generator.data.ctx.insert("compositions", &generator.data.compositions);
 
-        match TEMPLATES.render("sol/cpu.sol.template", &generator.data.ctx) {
+        match TEMPLATES.render("move/cpu.move.template", &generator.data.ctx) {
             Ok(s) => {
                 fs::create_dir_all("generated").expect("Failed to create directory");
                 let mut file = File::create("generated/test.move").expect("Failed to create Move file");

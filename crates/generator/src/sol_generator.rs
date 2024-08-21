@@ -6,25 +6,10 @@ use parser::Parser;
 use structure::ast::{ASTNode, Variable};
 use registry::Registry;
 use structure::comment::Comment;
-use crate::{Generator, GeneratorInput, GeneratorOutput};
+use crate::{ContractData, Generator, GeneratorInput, GeneratorOutput};
 
 pub struct SolGenerator {
     pub data: ContractData,
-}
-
-pub struct ContractData {
-    pub memory_layout: Vec<HashMap<String, String>>,
-    pub instructions: String,
-    pub expmods: String,
-    pub domains: String,
-    pub denominators: String,
-    pub denominator_invs: String,
-    pub compositions: String,
-    pub registry: Box<dyn Registry>,
-    pub domain_registry: Box<dyn Registry>,
-    pub denom_registry: Box<dyn Registry>,
-    pub nume_registry: Box<dyn Registry>,
-    pub ctx: Context,
 }
 
 impl SolGenerator {
