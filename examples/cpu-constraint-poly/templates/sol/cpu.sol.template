@@ -43,16 +43,21 @@ contract CpuConstraintPoly {
             }
             {
                 // Prepare expmods for denominators and numerators.
-                {%- block instructions %}
-                {{instructions}}
-                {%- endblock instructions %}
+                {{expmods}}
             }
 
             {
                 // Compute domains.
-
+                {{domains}}
             }
+
             {
+                // Compute denominators.
+                {{denominators}}
+            }
+
+            {
+                // Compute denominator_invs.
                 {% include "sol/compute-inverse-denominators.sol.template" %}
             }
 

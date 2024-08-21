@@ -396,6 +396,9 @@ mod test {
         }
 
         generator.data.ctx.insert("memory_layout", &generator.data.memory_layout);
+        generator.data.ctx.insert("expmods", &generator.data.expmods);
+        generator.data.ctx.insert("domains", &generator.data.domains);
+        generator.data.ctx.insert("denominators", &generator.data.denominators);
         generator.data.ctx.insert("instructions", &generator.data.instructions);
         generator.data.ctx.insert("compositions", &generator.data.compositions);
 

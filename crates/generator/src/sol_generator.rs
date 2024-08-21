@@ -132,6 +132,7 @@ impl Generator<Comment, ()> for SolGenerator {
 
                 // calculate the address
                 let (name, index) = Comment::extract_left(&left);
+                let block_name = name.clone();
                 let name = match index {
                     0 => name.to_string(),
                     _ => format!("{}{}", name.trim_end_matches('s'), index)
@@ -154,10 +155,9 @@ impl Generator<Comment, ()> for SolGenerator {
 
                 let a = format!("// {} = {}\n{}\n", left, right, a);
 
-
-                match name.as_str() {
+                match block_name {
                     "expmods" => self.data.expmods.push_str(a.as_str()),
-                    "domains" => self.data.expmods.push_str(a.as_str()),
+                    "domains" => self.data.domains.push_str(a.as_str()),
                     "denominators" => self.data.denominators.push_str(a.as_str()),
                     "compositions" => self.data.compositions.push_str(a.as_str()),
                     _ => self.data.instructions.push_str(a.as_str())
