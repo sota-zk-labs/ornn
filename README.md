@@ -1,5 +1,5 @@
 # Ornn
-The blacksmith crafts material into verifiers.
+The blacksmith who crafts materials into verifiers.
 
 [![License](https://img.shields.io/github/license/sota-zk/ornn)](./LICENSE)
 
@@ -25,7 +25,7 @@ Strategy:
    - `// Constraint expression for cpu/update_registers/update_pc/tmp0: column8_row2 - cpu__decode__opcode_range_check__bit_9 * column3_row9.`
      - compute the constraint expression
      - * numerator
-     - / denominator
+     - * denominator
 
 4. generate new code
 
