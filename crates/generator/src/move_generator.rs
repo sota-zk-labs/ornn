@@ -49,16 +49,17 @@ impl MoveGenerator {
                     "-" => format!("(({} - {}) % PRIME)", left_expr, right_expr),
                     "*" => format!("fmul({}, {})", left_expr, right_expr),
                     "^" => format!("fexp({}, {})", left_expr, right_expr),
-                    "/" => format!("{} / {}", left_expr, right_expr),
+                    "/" => format!("({} / {})", left_expr, right_expr),
                     "**" => format!("### pow pow con cac ###({}, {})", left_expr, right_expr),
 
                     _ => panic!("Unsupported operator"),
                 };
 
-                *temp_var_counter += 1;
-                let temp_var = format!("val_{}", temp_var_counter);
+                // *temp_var_counter += 1;
+                // let temp_var = format!("val_{}", temp_var_counter);
 
-                code.push_str(&format!("let {} = {};\n", temp_var, operation_code));
+                let temp_var = operation_code;
+                // code.push_str(&format!("let {} = {};\n", temp_var, operation_code));
                 temp_var
             }
         }
