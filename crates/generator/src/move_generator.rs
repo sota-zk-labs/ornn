@@ -133,8 +133,8 @@ impl Generator<Comment, ()> for MoveGenerator {
                 self.data.registry.store(ast.to_string(), slot.clone());
 
                 let a = match count {
-                    0 => format!("{{\nlet val = {};\n*vector::borrow_mut(&mut ctx, {}) = val;\n}};", code, Self::convert_mem_to_slot(slot.as_str())),
-                    _ => format!("{{\n{}\n*vector::borrow_mut(&mut ctx, {}) = val_{};\n}};", code, Self::convert_mem_to_slot(slot.as_str()), count)
+                    0 => format!("{{\nlet val = {};\n*borrow_mut(&mut ctx, {}) = val;\n}};", code, Self::convert_mem_to_slot(slot.as_str())),
+                    _ => format!("{{\n{}\n*borrow_mut(&mut ctx, {}) = val_{};\n}};", code, Self::convert_mem_to_slot(slot.as_str()), count)
                 };
 
                 let a = format!("// {} = {}\n{}\n", left, right, a);

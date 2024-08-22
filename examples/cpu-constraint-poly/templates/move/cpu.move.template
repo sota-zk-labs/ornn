@@ -1,7 +1,9 @@
 module verifier_addr::cpu_constraint_poly {
 
     use std::vector;
-    use std::vector::{push_back, borrow};
+    use std::vector::{push_back, borrow, borrow_mut};
+
+    const EPRODUCT_INVERSE_ZERO: u64 = 0x0001;
 
     const PRIME: u256 = 0x800000000000011000000000000000000000000000000000000000000000001;
 
@@ -20,7 +22,7 @@ module verifier_addr::cpu_constraint_poly {
         let remain = 404 - vector::length(&ctx);
 
         for (i in 0..remain) {
-            vector::push_back(&mut ctx, 0);
+            push_back(&mut ctx, 0);
         };
 
         {
@@ -39,11 +41,45 @@ module verifier_addr::cpu_constraint_poly {
             {{ denominators }}
         };
 
-        {
-            // compute denominator_invs
+            {
+                // compute denominator_invs
 
+                // Start by computing the cumulative product.
+                // Let (d_0, d_1, d_2, ..., d_{n-1}) be the values in denominators. After this loop
+                // denominatorInvs will be (1, d_0, d_0 * d_1, ...) and prod will contain the value of
+                // d_0 * ... * d_{n-1}.
+                // Compute the offset between the partialProducts array and the input values array.
+                let productsToValuesOffset = 18;
+                let prod = 1u256;
+                let partialProductEndPtr = 380;
+                let partialProductPtr = 362;
+                while (partialProductPtr < partialProductEndPtr) {
+                    partialProductPtr = partialProductPtr + 1;
+                    *vector::borrow_mut(&mut ctx, partialProductPtr) = prod;
+                    // prod *= d_{i}.
+                    prod = fmul(prod, *borrow(&ctx, partialProductPtr + productsToValuesOffset));
+                };
 
-        };
+                let firstPartialProductPtr = 362;
+                // Compute the inverse of the product.
+                let prodInv = fexp(prod, PRIME - 2);
+
+                assert!(prodInv != 0, EPRODUCT_INVERSE_ZERO);
+
+                let currentPartialProductPtr = 380;
+
+                // Compute the inverses.
+                // Loop over denominator_invs in reverse order.
+                // currentPartialProductPtr is initialized to one past the end.
+                while (currentPartialProductPtr > firstPartialProductPtr) {
+                    currentPartialProductPtr = currentPartialProductPtr - 1;
+                    // Store 1/d_{i} = (d_0 * ... * d_{i-1}) * 1/(d_0 * ... * d_{i}).
+                    *borrow_mut(&mut ctx, currentPartialProductPtr) = fmul(*borrow(&ctx, currentPartialProductPtr), prodInv);
+                    // Update prodInv to be 1/(d_0 * ... * d_{i-1}) by multiplying by d_i.
+                    prodInv = fmul(prodInv, *borrow(&ctx, currentPartialProductPtr + productsToValuesOffset));
+                };
+
+            };
 
         let composition_alpha_pow = 1u256;
 
