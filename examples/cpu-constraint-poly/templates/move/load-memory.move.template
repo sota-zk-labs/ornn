@@ -1,0 +1,3 @@
+    {% for memory in memory_layout -%}
+    let {{memory.description}} = *borrow(&ctx, {{memory.slot}});
+    {% endfor %}

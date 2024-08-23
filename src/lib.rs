@@ -356,6 +356,7 @@ mod test {
                              let left = &captures[1];
                              let operator = &captures[2];
                              let right = &captures[3];
+                             println!("dit con cu may {}, {}, {}", left, operator, right);
                              Comment::Instruction(
                                  left.to_string(),
                                  right.to_string(),

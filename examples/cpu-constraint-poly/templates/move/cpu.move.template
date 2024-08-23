@@ -15,11 +15,8 @@ module verifier_addr::cpu_constraint_poly {
         0
     }
 
+    {% include "move/memory-map.move.template" %}
     public fun fallback(ctx: &vector<u256>): u256 {
-        {% include "move/memory-map.move.template" %}
-
-        let point = oods_point;
-
         let ctx = *ctx;
         let res = 0;
 
@@ -28,6 +25,9 @@ module verifier_addr::cpu_constraint_poly {
         for (i in 0..remain) {
             push_back(&mut ctx, 0);
         };
+
+        {% include "move/load-memory.move.template" %}
+        let point = oods_point;
 
         {
             // compute expmods
@@ -84,6 +84,8 @@ module verifier_addr::cpu_constraint_poly {
                 };
 
             };
+
+        {% include "move/load-memory.move.template" %}
 
         {
             {{ instructions }}
