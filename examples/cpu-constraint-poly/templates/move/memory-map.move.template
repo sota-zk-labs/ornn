@@ -1,0 +1,8 @@
+    // The Memory map during the execution of this contract is as follows:
+    {% for memory in memory_layout -%}
+    // [{{memory.start}}, {{memory.end}}) - {{memory.description}}
+    {% endfor %}
+
+    {% for memory in memory_layout -%}
+    let {{memory.description}} = *borrow(ctx, {{memory.slot}});
+    {% endfor %}

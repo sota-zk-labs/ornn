@@ -62,6 +62,8 @@ contract CpuConstraintPoly {
             }
 
             {
+                {{ instructions }}
+
                 let composition_alpha_pow := 1
                 let composition_alpha := /*composition_alpha*/ mload(0x520)
 

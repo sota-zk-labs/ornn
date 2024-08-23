@@ -200,9 +200,8 @@ mod test {
         }
 
         // find the denominator_invs's memory addresses
-        let oods = extract_denom_invs(&code);
-        println!("{:?}", oods);
-        for (key, value) in oods {
+        let denominator_invs = extract_denom_invs(&code);
+        for (key, value) in denominator_invs {
             generator.data.registry.store(key, value);
         }
 
@@ -388,8 +387,6 @@ mod test {
         generator.data.ctx.insert("memory_layout", &generator.data.memory_layout);
         generator.data.ctx.insert("expmods", &generator.data.expmods);
         generator.data.ctx.insert("domains", &generator.data.domains);
-        println!("{}", generator.data.domains);
-        println!("{}", generator.data.expmods);
         generator.data.ctx.insert("denominators", &generator.data.denominators);
         generator.data.ctx.insert("instructions", &generator.data.instructions);
         generator.data.ctx.insert("compositions", &generator.data.compositions);

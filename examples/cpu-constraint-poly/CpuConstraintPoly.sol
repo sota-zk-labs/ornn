@@ -1990,7 +1990,7 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for cpu/opcodes/call/push_pc: cpu__decode__opcode_range_check__bit_12 * (column3_row5 - (column3_row0 + cpu__decode__opcode_range_check__bit_2 + 1)).
+              // Constraint expression for cpu/opcodes/call/push_pc: cpu__decode__opcode_range_check__bit_12 * (column3_row5 - npc_reg_0).
               let val := mulmod(
                 /*intermediate_value/cpu/decode/opcode_range_check/bit_12*/ mload(0x1ec0),
                 addmod(
@@ -2771,7 +2771,7 @@ contract CpuConstraintPoly {
               }
 
               {
-              // Constraint expression for pedersen/hash0/ec_subset_sum/bit_unpacking/last_one_is_zero: column7_row89 * (column7_row0 - (column7_row4 + column7_row4)).
+              // Constraint expression for pedersen/hash0/ec_subset_sum/bit_unpacking/last_one_is_zero: column7_row89 * pedersen__hash0__ec_subset_sum__bit_0.
               let val := mulmod(
                 /*column7_row89*/ mload(0x1720),
                 addmod(

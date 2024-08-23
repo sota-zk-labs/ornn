@@ -16,6 +16,10 @@ module verifier_addr::cpu_constraint_poly {
     }
 
     public fun fallback(ctx: &vector<u256>): u256 {
+        {% include "move/memory-map.move.template" %}
+
+        let point = oods_point;
+
         let ctx = *ctx;
         let res = 0;
 
@@ -81,13 +85,15 @@ module verifier_addr::cpu_constraint_poly {
 
             };
 
-        let composition_alpha_pow = 1u256;
-
-        let composition_alpha = /*composition_alpha*/ *borrow(&ctx, 41);
-
         {
+            {{ instructions }}
+
             // compute compositions
-             {{ compositions }}
+
+            let composition_alpha_pow = 1u256;
+            let composition_alpha = /*composition_alpha*/ *borrow(&ctx, 41);
+
+            {{ compositions }}
         };
         res
     }

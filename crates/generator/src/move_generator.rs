@@ -14,16 +14,22 @@ pub struct MoveGenerator {
 
 impl MoveGenerator {
 
-    fn convert_mem_to_slot(str: &str) -> String {
-        (U256::from_str_radix(str, 16).unwrap() / U256::from(32)).to_string()
+    fn convert_mem_to_slot(str: &str) -> U256 {
+        (U256::from_str_radix(str, 16).unwrap() / U256::from(32))
     }
     fn generate_code_recursive(&self, ast: &ASTNode, code: &mut String, temp_var_counter: &mut usize) -> String {
         let registry = &self.data.registry;
         match registry.load(&ast.to_string()) {
             None => {}
             Some(slot) => {
-                let node = format!("/*{}*/ *borrow(&ctx, {})", &ast.to_string(), Self::convert_mem_to_slot(slot));
-                return node;
+                return match Self::convert_mem_to_slot(slot) {
+                    x if x <= U256::from(41) || (x >= U256::from(234) && x <= U256::from(285)) => {
+                        format!("/*{}*/ {}", &ast.to_string().replace(".", "__"), &ast.to_string().replace(".", "__"))
+                    }
+                    x => {
+                        format!("/*{}*/ *borrow(&ctx, {})", &ast.to_string(), x)
+                    }
+                };
             }
         }
 
@@ -33,7 +39,9 @@ impl MoveGenerator {
                     Variable::String(slot) => {
                         format!("/*{}*/ *borrow(&ctx, {})", var, match registry.load(slot) {
                             None => { "### unknow ###" }
-                            Some(slot) => { slot }
+                            Some(mem) => {
+                                mem
+                            }
                         })
                     }
                     Variable::U256(u256) => { u256.to_string() }
@@ -86,7 +94,12 @@ impl Generator<Comment, ()> for MoveGenerator {
                 let mut map: HashMap<String, String> = HashMap::new();
                 map.insert("start".to_string(), format!("{:#x}", start));
                 map.insert("end".to_string(), format!("{:#x}", end));
-                map.insert("description".to_string(), slot.to_string());
+                let key = slot.trim_start_matches("intermediate_value/")
+                    .trim_start_matches("periodic_column/")
+                    .replace("/", "__")
+                    .replace(".", "__");
+                map.insert("description".to_string(), key.to_string());
+                map.insert("slot".to_string(), (start / U256::from(32)).to_string());
 
                 self.data.memory_layout.push(map);
 
