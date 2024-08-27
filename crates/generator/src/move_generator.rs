@@ -56,7 +56,7 @@ impl MoveGenerator {
                     "+" => format!("(({} + {}) % PRIME)", left_expr, right_expr),
                     "-" => format!("(({} + (PRIME - {})) % PRIME)", left_expr, right_expr),
                     "*" => format!("fmul({}, {})", left_expr, right_expr),
-                    "^" => format!("fexp({}, {})", left_expr, right_expr),
+                    "^" => format!("fpow({}, {})", left_expr, right_expr),
                     "/" => format!("({} / {})", left_expr, right_expr),
                     "**" => format!("### pow pow con cac ###({}, {})", left_expr, right_expr),
 
