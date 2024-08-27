@@ -54,7 +54,7 @@ impl MoveGenerator {
 
                 let operation_code = match op.as_str() {
                     "+" => format!("(({} + {}) % PRIME)", left_expr, right_expr),
-                    "-" => format!("(({} - {}) % PRIME)", left_expr, right_expr),
+                    "-" => format!("(({} + (PRIME - {})) % PRIME)", left_expr, right_expr),
                     "*" => format!("fmul({}, {})", left_expr, right_expr),
                     "^" => format!("fexp({}, {})", left_expr, right_expr),
                     "/" => format!("({} / {})", left_expr, right_expr),
