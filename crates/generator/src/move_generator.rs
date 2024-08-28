@@ -23,7 +23,7 @@ impl MoveGenerator {
             None => {}
             Some(slot) => {
                 return match Self::convert_mem_to_slot(slot) {
-                    x if x <= U256::from(41) || (x >= U256::from(234) && x <= U256::from(285)) => {
+                    x if x <= U256::from(41) => {
                         format!("/*{}*/ {}", &ast.to_string().replace(".", "__"), &ast.to_string().replace(".", "__"))
                     }
                     x => {
