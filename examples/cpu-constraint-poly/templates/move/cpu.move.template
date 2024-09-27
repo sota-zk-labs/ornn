@@ -14,7 +14,7 @@ module cpu_addr::cpu_constraint_poly {
         let ctx = *ctx;
         let res = 0;
 
-        let remain = 404 - vector::length(&ctx);
+        let remain = 598 - vector::length(&ctx);
 
         for (i in 0..remain) {
             push_back(&mut ctx, 0);
@@ -47,10 +47,10 @@ module cpu_addr::cpu_constraint_poly {
                         // denominatorInvs will be (1, d_0, d_0 * d_1, ...) and prod will contain the value of
                         // d_0 * ... * d_{n-1}.
                         // Compute the offset between the partialProducts array and the input values array.
-                        let productsToValuesOffset = 18;
+                        let productsToValuesOffset = 26;
                         let prod = 1u256;
-                        let partialProductEndPtr = 380;
-                        let partialProductPtr = 362;
+                        let partialProductEndPtr = 566;
+                        let partialProductPtr = 540;
                         while (partialProductPtr < partialProductEndPtr) {
                             *vector::borrow_mut(&mut ctx, partialProductPtr) = prod;
                             // prod *= d_{i}.
@@ -59,7 +59,7 @@ module cpu_addr::cpu_constraint_poly {
 
                         };
 
-                        let firstPartialProductPtr = 362;
+                        let firstPartialProductPtr = 540;
                         // Compute the inverse of the product.
 
                         let prodInv = fpow(prod, PRIME - 2);

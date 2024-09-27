@@ -190,7 +190,10 @@ mod test {
 
         &generator.data.registry.store("point".to_string(), "0x440".to_string());
 
-        let code = read("examples/cpu-constraint-poly/CpuConstraintPoly.sol");
+        let input_path = "examples/cpu-constraint-poly/CpuConstraintPoly.sol.layout6";
+        let output_path = "generated/layout6.move";
+
+        let code = read(input_path);
         let comments = extract_comment(&code);
 
         // find the oods value's memory addresses
@@ -394,7 +397,7 @@ mod test {
         match TEMPLATES.render("move/cpu.move.template", &generator.data.ctx) {
             Ok(s) => {
                 fs::create_dir_all("generated").expect("Failed to create directory");
-                let mut file = File::create("generated/test.move").expect("Failed to create Move file");
+                let mut file = File::create(output_path).expect("Failed to create Move file");
                 file.write_all(s.as_bytes()).expect("Failed to write to Move file");
             }
             Err(e) => {
